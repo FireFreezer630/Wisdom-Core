@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Plus, MessageSquare, Trash2, ChevronLeft, ChevronRight, Edit2, Check, X, Menu } from 'lucide-react';
 import { useChatStore } from '../store/chatStore';
 import { useTheme } from '../lib/ThemeProvider';
@@ -8,6 +8,7 @@ export const Sidebar: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const { isDarkMode } = useTheme();
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   const {
     conversations,
@@ -34,6 +35,25 @@ export const Sidebar: React.FC = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Handle click outside to close sidebar
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        !isCollapsed && 
+        sidebarRef.current && 
+        !sidebarRef.current.contains(event.target as Node) && 
+        window.innerWidth < 768
+      ) {
+        setIsCollapsed(true);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isCollapsed]);
 
   const handleNewConversation = () => {
     const newConversation = {
@@ -100,7 +120,7 @@ export const Sidebar: React.FC = () => {
 
       {/* Overlay backdrop for mobile - only visible when sidebar is open */}
       <div 
-        className={`fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 ease-in-out md:hidden ${
+        className={`fixed inset-0 bg-black bg-opacity-50 z-30 transition-opacity duration-300 ease-in-out md:hidden ${
           isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
         onClick={toggleSidebar}
@@ -108,9 +128,10 @@ export const Sidebar: React.FC = () => {
 
       {/* Sidebar */}
       <div 
-        className={`fixed md:absolute top-0 left-0 h-full z-40 ${sidebarBg} 
+        ref={sidebarRef}
+        className={`fixed md:fixed top-0 left-0 h-full z-40 ${sidebarBg} 
         border-r shadow-lg transition-all duration-500 ease-in-out transform 
-        ${isCollapsed ? '-translate-x-full' : 'translate-x-0 w-64'} 
+        ${isCollapsed ? '-translate-x-full' : 'translate-x-0'} 
         rounded-tr-2xl rounded-br-2xl overflow-hidden`}
         style={{ width: isCollapsed ? '0' : '16rem' }}
       >
@@ -124,7 +145,7 @@ export const Sidebar: React.FC = () => {
             <span className="font-medium">New Chat</span>
           </button>
 
-          <div className="flex-1 overflow-y-auto space-y-2 p-1">
+          <div className="flex-1 overflow-y-auto space-y-2 p-1 pb-32 scrollbar-thin">
             {conversations.map((conversation) => (
               <div
                 key={conversation.id}

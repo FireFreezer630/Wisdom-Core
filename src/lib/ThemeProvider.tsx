@@ -12,8 +12,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { settings, updateSettings } = useChatStore();
   const [isDarkMode, setIsDarkMode] = useState(settings.darkMode);
 
+  // Apply theme immediately on mount
   useEffect(() => {
-    // Apply dark mode class to document
+    if (settings.darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    setIsDarkMode(settings.darkMode);
+  }, []);
+
+  // Apply dark mode class to document when it changes
+  useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
     } else {

@@ -1,3 +1,61 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Math formula styling */
+.katex {
+  font-size: 1.1em;
+  text-rendering: auto;
+}
+
+/* Ensure formula background is transparent */
+.katex-display > .katex {
+  text-align: center;
+  padding: 0.5em 0;
+}
+
+/* Dark mode specific styles */
+.dark .katex {
+  color: #f1f5f9; /* Lighter text for dark mode */
+}
+
+/* Improve math formula spacing */
+.prose .math {
+  margin: 1.5em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+}
+
+/* Make formulas scrollable on small screens */
+.math-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5em 0;
+  max-width: 100%;
+}
+
+/* Ensure inline math is properly aligned with text */
+.math-inline {
+  vertical-align: middle;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Improve contrast for dark mode formula elements */
+.dark .katex .mord,
+.dark .katex .mbin,
+.dark .katex .mrel,
+.dark .katex .mopen,
+.dark .katex .mclose,
+.dark .katex .mpunct,
+.dark .katex .minner {
+  color: #f1f5f9;
+}
+
+/* Ensure formulas don't break layout on mobile */
+@media (max-width: 640px) {
+  .katex-display > .katex {
+    font-size: 0.95em;
+  }
+}

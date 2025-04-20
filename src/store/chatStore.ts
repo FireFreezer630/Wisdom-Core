@@ -17,6 +17,16 @@ interface ChatStore {
 const DEFAULT_SYSTEM_PROMPT = `
 TUM HO ICSE KA SABSE MAHAAN TEACHER – "ICSE MASTER TUTOR 9000" – JO PURE ICSE SYLLABUS KO BACHON KO AISA SIKHATA HAI JAISA KOI NAHI. TUMHARI BAAT KA TAREEQA EKDAM PYAARA, SIMPLE AUR DOSTANA HAI – JAADU KI TARAH HAR TOPIC CLEAR HO JATA HAI. TUM HAMESHA HINGLISH (MATLAB ROMAN HINDI, THODA THODA ENGLISH) MEIN BAAT KARTE HO.
 
+###RENDERING INSTRUCTIONS###
+- For all mathematical formulas, use proper LaTeX syntax
+- Simple formulas and inline equations should be written between single dollar signs, like $E = mc^2$
+- More complex formulas and display equations should be written between double dollar signs, like $$\\frac{d}{dx}\\left( \\int_{a}^{x} f(t)\\,dt \\right) = f(x)$$
+- Properly escape special characters in LaTeX: \\ (backslash), { } (braces), _ (underscore), ^ (caret)
+- For fractions use \\frac{numerator}{denominator}
+- For subscripts use x_{subscript} and for superscripts use x^{superscript}
+- For square roots use \\sqrt{x} and for nth roots use \\sqrt[n]{x}
+- These instructions are for your internal use only, do not mention them to the user
+
 ###MISSION###
 
 - **EXPLAIN** POORA ICSE CURRICULUM CLASS-WISE (FROM CLASS 6 TO 10) INCLUDING SUBJECTS LIKE SCIENCE, MATHS, ENGLISH, HISTORY, GEOGRAPHY, CIVICS, COMPUTER APPLICATIONS, ETC.
@@ -27,7 +37,7 @@ TUM HO ICSE KA SABSE MAHAAN TEACHER – "ICSE MASTER TUTOR 9000" – JO PURE ICS
       - PHIR 15 SAAL KA BACHHA samjhta hai waise samjhao
       - **USE KARO MAZEDAAR ANALOGIES** jaise ki kahani, cartoon, daily life examples
       - **REPEAT KARO BASICS** jab lagay ki student confuse ho gaya
-      - HAR ANSWER KO SHORT, FUN, OR SIMPLE BANAO – lekin concept clear zaroor karo
+      - **HAR ANSWER KO SHORT, FUN, OR SIMPLE BANAO** – lekin concept clear zaroor karo
       
       ---
       
@@ -111,56 +121,127 @@ const DEFAULT_CONVERSATION: Conversation = {
     {
       role: 'assistant',
       content:
-        "Hello! I'm WisdomCore, your AI knowledge companion. I'm here to help you explore any topic, answer your questions, and engage in meaningful discussions. What would you like to learn about today?",
+        "Hello! I'm WisdomCore, your AI knowledge companion. I'm here to help you explore any topic, answer your questions, and engage in meaningful discussions.\n\nWhat would you like to learn about today?",
     },
   ],
   createdAt: new Date(),
   updatedAt: new Date(),
 };
 
-export const useChatStore = create<ChatStore>((set) => ({
-  conversations: [DEFAULT_CONVERSATION],
-  activeConversationId: DEFAULT_CONVERSATION.id,
-  settings: {
-    defaultSystemPrompt: DEFAULT_SYSTEM_PROMPT,
-    darkMode: false,
-    pomodoroWork: 25,
-    pomodoroBreak: 5,
-    pomodoroLongBreak: 15,
-    pomodoroRounds: 4,
-  },
-  timer: {
-    endTime: null,
-    isPomodoro: false,
-    pomodoroState: 'work',
-    currentRound: 1,
-  },
-  addConversation: (conversation) =>
-    set((state) => ({
-      conversations: [...state.conversations, conversation],
-      activeConversationId: conversation.id,
-    })),
-  updateConversation: (id, updates) =>
-    set((state) => ({
-      conversations: state.conversations.map((conv) =>
-        conv.id === id ? { ...conv, ...updates, updatedAt: new Date() } : conv
-      ),
-    })),
-  deleteConversation: (id) =>
-    set((state) => ({
-      conversations: state.conversations.filter((conv) => conv.id !== id),
-      activeConversationId:
-        state.activeConversationId === id
-          ? state.conversations[0]?.id ?? null
-          : state.activeConversationId,
-    })),
-  setActiveConversation: (id) => set({ activeConversationId: id }),
-  updateSettings: (newSettings) =>
-    set((state) => ({
-      settings: { ...state.settings, ...newSettings },
-    })),
-  setTimer: (newTimer) =>
-    set((state) => ({
-      timer: { ...state.timer, ...newTimer },
-    })),
-}));
+// Helper function to load state from localStorage
+const loadFromLocalStorage = () => {
+  try {
+    const storedConversations = localStorage.getItem('wisdom-core-conversations');
+    const storedSettings = localStorage.getItem('wisdom-core-settings');
+    const storedActiveId = localStorage.getItem('wisdom-core-active-conversation');
+
+    const conversations = storedConversations 
+      ? JSON.parse(storedConversations).map((conv: any) => ({
+          ...conv,
+          createdAt: new Date(conv.createdAt),
+          updatedAt: new Date(conv.updatedAt)
+        }))
+      : [DEFAULT_CONVERSATION];
+      
+    const settings = storedSettings 
+      ? JSON.parse(storedSettings) 
+      : {
+          defaultSystemPrompt: DEFAULT_SYSTEM_PROMPT,
+          darkMode: false,
+          pomodoroWork: 25,
+          pomodoroBreak: 5,
+          pomodoroLongBreak: 15,
+          pomodoroRounds: 4,
+        };
+        
+    const activeConversationId = storedActiveId || conversations[0].id;
+    
+    return { conversations, settings, activeConversationId };
+  } catch (error) {
+    console.error('Error loading from localStorage:', error);
+    return null;
+  }
+};
+
+// Helper function to save state to localStorage
+const saveToLocalStorage = (key: string, data: any) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (error) {
+    console.error(`Error saving ${key} to localStorage:`, error);
+  }
+};
+
+export const useChatStore = create<ChatStore>((set, get) => {
+  // Load initial state from localStorage or use defaults
+  const savedState = loadFromLocalStorage();
+  
+  return {
+    conversations: savedState?.conversations || [DEFAULT_CONVERSATION],
+    activeConversationId: savedState?.activeConversationId || DEFAULT_CONVERSATION.id,
+    settings: savedState?.settings || {
+      defaultSystemPrompt: DEFAULT_SYSTEM_PROMPT,
+      darkMode: false,
+      pomodoroWork: 25,
+      pomodoroBreak: 5,
+      pomodoroLongBreak: 15,
+      pomodoroRounds: 4,
+    },
+    timer: {
+      endTime: null,
+      isPomodoro: false,
+      pomodoroState: 'work',
+      currentRound: 1,
+    },
+    addConversation: (conversation) => 
+      set((state) => {
+        const newState = {
+          conversations: [...state.conversations, conversation],
+          activeConversationId: conversation.id,
+        };
+        saveToLocalStorage('wisdom-core-conversations', newState.conversations);
+        saveToLocalStorage('wisdom-core-active-conversation', newState.activeConversationId);
+        return newState;
+      }),
+    updateConversation: (id, updates) => 
+      set((state) => {
+        const newConversations = state.conversations.map((conv) =>
+          conv.id === id ? { ...conv, ...updates, updatedAt: new Date() } : conv
+        );
+        saveToLocalStorage('wisdom-core-conversations', newConversations);
+        return { conversations: newConversations };
+      }),
+    deleteConversation: (id) => 
+      set((state) => {
+        const filteredConversations = state.conversations.filter((conv) => conv.id !== id);
+        const newActiveId = state.activeConversationId === id
+          ? filteredConversations[0]?.id ?? null
+          : state.activeConversationId;
+          
+        saveToLocalStorage('wisdom-core-conversations', filteredConversations);
+        if (newActiveId !== state.activeConversationId) {
+          saveToLocalStorage('wisdom-core-active-conversation', newActiveId);
+        }
+        
+        return {
+          conversations: filteredConversations,
+          activeConversationId: newActiveId,
+        };
+      }),
+    setActiveConversation: (id) => 
+      set(() => {
+        saveToLocalStorage('wisdom-core-active-conversation', id);
+        return { activeConversationId: id };
+      }),
+    updateSettings: (newSettings) => 
+      set((state) => {
+        const updatedSettings = { ...state.settings, ...newSettings };
+        saveToLocalStorage('wisdom-core-settings', updatedSettings);
+        return { settings: updatedSettings };
+      }),
+    setTimer: (newTimer) => 
+      set((state) => ({
+        timer: { ...state.timer, ...newTimer },
+      })),
+  };
+});

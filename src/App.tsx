@@ -121,54 +121,59 @@ function App() {
       <Sidebar />
       
       <main className="w-full flex flex-col">
-        <div className={`flex items-center justify-between p-4 border-b ${headerClass} relative z-10 shadow-sm`}>
-          <div className="flex items-center gap-3 pl-16 md:pl-16">
-            <div className="h-10 w-10 md:h-12 md:w-12 bg-app-purple rounded-xl flex items-center justify-center">
-              <GraduationCap className="h-5 w-5 md:h-6 md:w-6 text-white" />
+        {/* Fixed header - full width */}
+        <div className={`fixed top-0 left-0 right-0 ${headerClass} border-b z-20 shadow-md`}>
+          <div className="flex items-center justify-between p-4 max-w-screen-2xl mx-auto">
+            <div className="flex items-center gap-3 pl-16 md:pl-[calc(16rem+1rem)]">
+              <div className="h-10 w-10 md:h-12 md:w-12 bg-app-purple rounded-xl flex items-center justify-center">
+                <GraduationCap className="h-5 w-5 md:h-6 md:w-6 text-white" />
+              </div>
+              <h1 className="text-xl md:text-2xl font-bold truncate">WisdomCore</h1>
             </div>
-            <h1 className="text-xl md:text-2xl font-bold truncate">WisdomCore</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={toggleDarkMode}
-              className={`p-2 rounded-xl ${
-                isDarkMode ? 'bg-app-card-dark hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
-              } transition-colors shadow-sm`}
-              aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {isDarkMode ? (
-                <Sun className="h-5 w-5 md:h-6 md:w-6 text-yellow-300" />
-              ) : (
-                <Moon className="h-5 w-5 md:h-6 md:w-6 text-gray-600" />
-              )}
-            </button>
-            <button
-              onClick={() => setIsTimerOpen(true)}
-              className={`p-2 rounded-xl relative ${
-                isDarkMode ? 'bg-app-card-dark hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
-              } transition-colors shadow-sm`}
-              aria-label="Timer settings"
-            >
-              <Clock className={`h-5 w-5 md:h-6 md:w-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
-              {timer.endTime && (
-                <div className="absolute -top-1 -right-1 h-3 w-3 bg-app-purple rounded-full" />
-              )}
-            </button>
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              className={`p-2 rounded-xl ${
-                isDarkMode ? 'bg-app-card-dark hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
-              } transition-colors shadow-sm`}
-              aria-label="Open settings"
-            >
-              <Settings className={`h-5 w-5 md:h-6 md:w-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleDarkMode}
+                className={`p-2 rounded-xl ${
+                  isDarkMode ? 'bg-app-card-dark hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
+                } transition-colors shadow-sm`}
+                aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                {isDarkMode ? (
+                  <Sun className="h-5 w-5 md:h-6 md:w-6 text-yellow-300" />
+                ) : (
+                  <Moon className="h-5 w-5 md:h-6 md:w-6 text-gray-600" />
+                )}
+              </button>
+              <button
+                onClick={() => setIsTimerOpen(true)}
+                className={`p-2 rounded-xl relative ${
+                  isDarkMode ? 'bg-app-card-dark hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
+                } transition-colors shadow-sm`}
+                aria-label="Timer settings"
+              >
+                <Clock className={`h-5 w-5 md:h-6 md:w-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+                {timer.endTime && (
+                  <div className="absolute -top-1 -right-1 h-3 w-3 bg-app-purple rounded-full" />
+                )}
+              </button>
+              <button
+                onClick={() => setIsSettingsOpen(true)}
+                className={`p-2 rounded-xl ${
+                  isDarkMode ? 'bg-app-card-dark hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
+                } transition-colors shadow-sm`}
+                aria-label="Open settings"
+              >
+                <Settings className={`h-5 w-5 md:h-6 md:w-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="flex-1 overflow-hidden">
-          <div className="h-full flex flex-col p-4 md:p-6">
-            <div className="flex-1 overflow-y-auto space-y-4 mb-4 px-0 md:px-2 scrollbar-thin">
+        {/* Content area with padding for header and input */}
+        <div className="flex-1 overflow-hidden flex flex-col pt-[72px] pb-[76px] md:ml-64">
+          {/* Messages container with padding at the bottom to ensure space for fixed input */}
+          <div className="flex-1 overflow-y-auto p-4 md:p-6">
+            <div className="max-w-4xl mx-auto space-y-4 px-0 md:px-2 scrollbar-thin">
               {activeConversation.messages.map((message, index) => (
                 <ChatMessage
                   key={index}
@@ -179,13 +184,13 @@ function App() {
             </div>
 
             {error && (
-              <div className="text-red-500 text-sm mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-900/20">
+              <div className="max-w-4xl mx-auto text-red-500 text-sm mt-4 p-3 rounded-xl bg-red-50 dark:bg-red-900/20">
                 {error}
               </div>
             )}
 
             {usage && (
-              <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mb-4 text-center`}>
+              <div className={`max-w-4xl mx-auto text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mt-4 text-center`}>
                 <span className="px-3 py-1 rounded-full bg-app-bg dark:bg-gray-800 inline-block">
                   Tokens used: {usage.total_tokens} 
                   (Prompt: {usage.prompt_tokens}, 
@@ -193,7 +198,10 @@ function App() {
                 </span>
               </div>
             )}
+          </div>
 
+          {/* Fixed chat input at the bottom - full width */}
+          <div className={`fixed bottom-0 left-0 right-0 z-10`}>
             <ChatInput
               onSend={handleSendMessage}
               disabled={isLoading}
