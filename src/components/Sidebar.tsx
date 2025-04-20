@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { Plus, MessageSquare, Trash2, ChevronLeft, ChevronRight, Edit2, Check, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, MessageSquare, Trash2, ChevronLeft, ChevronRight, Edit2, Check, X, Menu } from 'lucide-react';
 import { useChatStore } from '../store/chatStore';
+import { useTheme } from '../lib/ThemeProvider';
 
 export const Sidebar: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
+  const { isDarkMode } = useTheme();
 
   const {
     conversations,
@@ -16,6 +18,22 @@ export const Sidebar: React.FC = () => {
     updateConversation,
     settings,
   } = useChatStore();
+
+  // Check screen size for mobile view
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        // Set to collapsed by default on mobile
+        setIsCollapsed(true);
+      }
+    };
+
+    // Initial check
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleNewConversation = () => {
     const newConversation = {
@@ -29,6 +47,9 @@ export const Sidebar: React.FC = () => {
     addConversation(newConversation);
     setEditingId(newConversation.id);
     setEditTitle('New Chat');
+    
+    // Open sidebar when creating new conversation
+    setIsCollapsed(false);
   };
 
   const startEditing = (id: string, currentTitle: string) => {
@@ -47,105 +68,139 @@ export const Sidebar: React.FC = () => {
     setEditingId(null);
   };
 
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
+  // Hide sidebar when conversation is selected on mobile
+  const handleConversationSelect = (id: string) => {
+    setActiveConversation(id);
+    if (window.innerWidth < 768) {
+      setIsCollapsed(true);
+    }
+  };
+
   return (
-    <div 
-      className={`${
-        isCollapsed ? 'w-16' : 'w-64'
-      } bg-white h-screen border-r border-gray-200 flex flex-col transition-all duration-300 relative`}
-    >
+    <>
+      {/* Toggle button */}
       <button
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-1/2 transform -translate-y-1/2 bg-white border border-gray-200 rounded-full p-1 shadow-md hover:shadow-lg transition-shadow"
+        onClick={toggleSidebar}
+        className="fixed z-50 top-4 left-4 p-2 rounded-md bg-purple-600 text-white shadow-md hover:bg-purple-700 transition-colors"
+        aria-label="Toggle sidebar"
+        style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       >
         {isCollapsed ? (
-          <ChevronRight className="h-4 w-4 text-gray-600" />
+          <Menu className="h-5 w-5" />
         ) : (
-          <ChevronLeft className="h-4 w-4 text-gray-600" />
+          <ChevronLeft className="h-5 w-5" />
         )}
       </button>
 
-      <button
-        onClick={handleNewConversation}
-        className={`flex items-center gap-2 mx-2 mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 mb-4 ${
-          isCollapsed ? 'justify-center' : ''
+      {/* Overlay backdrop for mobile - only visible when sidebar is open */}
+      <div 
+        className={`fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 ease-in-out md:hidden ${
+          isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
-      >
-        <Plus className="h-5 w-5" />
-        {!isCollapsed && <span>New Chat</span>}
-      </button>
+        onClick={toggleSidebar}
+      />
 
-      <div className="flex-1 overflow-y-auto space-y-2 p-2">
-        {conversations.map((conversation) => (
-          <div
-            key={conversation.id}
-            className={`group flex items-center gap-2 p-2 rounded-lg cursor-pointer ${
-              activeConversationId === conversation.id
-                ? 'bg-purple-100'
-                : 'hover:bg-gray-100'
-            }`}
-            onClick={() => setActiveConversation(conversation.id)}
+      {/* Sidebar */}
+      <div 
+        className={`fixed md:absolute top-0 left-0 h-full z-40 ${
+          isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'
+        } border-r shadow-lg transition-all duration-500 ease-in-out transform ${
+          isCollapsed ? '-translate-x-full' : 'translate-x-0 w-64'
+        } overflow-hidden`}
+        style={{ width: isCollapsed ? '0' : '16rem' }}
+      >
+        {/* Content */}
+        <div className="h-full flex flex-col pt-16 overflow-x-hidden">
+          <button
+            onClick={handleNewConversation}
+            className="flex items-center gap-2 mx-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 mb-4 transition-colors"
           >
-            <MessageSquare className="h-5 w-5 text-gray-600 flex-shrink-0" />
-            
-            {!isCollapsed && (
-              editingId === conversation.id ? (
-                <div className="flex-1 flex items-center gap-1">
-                  <input
-                    type="text"
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    className="flex-1 px-2 py-1 text-sm border rounded"
-                    onClick={(e) => e.stopPropagation()}
-                    autoFocus
-                  />
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      saveEdit(conversation.id);
-                    }}
-                    className="p-1 hover:text-green-600"
-                  >
-                    <Check className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      cancelEdit();
-                    }}
-                    className="p-1 hover:text-red-600"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <span className="flex-1 truncate">{conversation.title}</span>
-                  <div className="opacity-0 group-hover:opacity-100 flex gap-1">
+            <Plus className="h-5 w-5" />
+            <span>New Chat</span>
+          </button>
+
+          <div className="flex-1 overflow-y-auto space-y-2 p-2">
+            {conversations.map((conversation) => (
+              <div
+                key={conversation.id}
+                className={`group flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors ${
+                  activeConversationId === conversation.id
+                    ? isDarkMode ? 'bg-purple-900/50' : 'bg-purple-100'
+                    : isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
+                } ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}
+                onClick={() => handleConversationSelect(conversation.id)}
+              >
+                <MessageSquare className={`h-5 w-5 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} flex-shrink-0`} />
+                
+                {editingId === conversation.id ? (
+                  <div className="flex-1 flex items-center gap-1">
+                    <input
+                      type="text"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      className={`flex-1 px-2 py-1 text-sm border rounded transition-colors ${
+                        isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300'
+                      }`}
+                      onClick={(e) => e.stopPropagation()}
+                      autoFocus
+                    />
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        startEditing(conversation.id, conversation.title);
+                        saveEdit(conversation.id);
                       }}
-                      className="p-1 hover:text-blue-600"
+                      className="p-1 hover:text-green-600 transition-colors"
+                      aria-label="Save edit"
                     >
-                      <Edit2 className="h-4 w-4" />
+                      <Check className="h-4 w-4" />
                     </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        deleteConversation(conversation.id);
+                        cancelEdit();
                       }}
-                      className="p-1 hover:text-red-600"
+                      className="p-1 hover:text-red-600 transition-colors"
+                      aria-label="Cancel edit"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <X className="h-4 w-4" />
                     </button>
                   </div>
-                </>
-              )
-            )}
+                ) : (
+                  <>
+                    <span className="flex-1 truncate">{conversation.title}</span>
+                    <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-opacity duration-200">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          startEditing(conversation.id, conversation.title);
+                        }}
+                        className="p-1 hover:text-blue-600 transition-colors"
+                        aria-label="Edit conversation title"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteConversation(conversation.id);
+                        }}
+                        className="p-1 hover:text-red-600 transition-colors"
+                        aria-label="Delete conversation"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
