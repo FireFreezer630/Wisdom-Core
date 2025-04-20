@@ -37,7 +37,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
   };
 
   return (
-    <div className={`${isDarkMode ? 'bg-gradient-to-t from-gray-900' : 'bg-gradient-to-t from-white'} to-transparent py-2 px-2 sm:px-4 sm:py-4`}>
+    <div className={`${isDarkMode ? 'bg-gradient-to-t from-app-bg-dark' : 'bg-gradient-to-t from-app-bg-light'} to-transparent py-3 px-4 sm:px-6 sm:py-5`}>
       <form onSubmit={handleSubmit} className="flex gap-2 max-w-4xl mx-auto">
         <input
           type="file"
@@ -50,11 +50,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className={`p-2 rounded-lg ${
+          className={`p-3 rounded-xl ${
             isDarkMode 
-              ? 'text-gray-400 hover:text-purple-400 hover:bg-gray-800' 
-              : 'text-gray-500 hover:text-purple-600 hover:bg-gray-100'
-          }`}
+              ? 'bg-app-card-dark text-gray-400 hover:text-app-purple' 
+              : 'bg-white text-gray-500 hover:text-app-purple shadow-app'
+          } transition-all duration-200`}
           disabled={disabled}
           aria-label="Upload image"
         >
@@ -63,14 +63,16 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
         
         <div className="flex-1 relative">
           {imageFile && (
-            <div className={`absolute -top-8 left-0 right-0 py-1 px-2 text-xs rounded-t-lg flex justify-between items-center ${
-              isDarkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700'
+            <div className={`absolute -top-10 left-0 right-0 py-2 px-3 text-xs rounded-xl flex justify-between items-center ${
+              isDarkMode ? 'bg-app-card-dark text-gray-300' : 'bg-white text-gray-700 shadow-app'
             }`}>
               <span className="truncate max-w-[90%]">📎 {imageFile.name}</span>
               <button 
                 type="button" 
                 onClick={clearImageFile}
-                className="text-gray-500 hover:text-red-500"
+                className={`text-gray-500 hover:text-red-500 p-1 rounded-full ${
+                  isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+                }`}
                 aria-label="Remove image"
               >
                 <X className="h-3 w-3" />
@@ -83,11 +85,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask anything..."
             disabled={disabled}
-            className={`w-full px-3 py-2 sm:px-4 sm:py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+            className={`w-full px-4 py-3 sm:px-5 sm:py-3 rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-app-purple/50 focus:border-transparent ${
               isDarkMode 
-                ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400' 
-                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-            }`}
+                ? 'bg-app-card-dark text-white placeholder-gray-400' 
+                : 'bg-white text-gray-900 placeholder-gray-500 shadow-app'
+            } transition-colors`}
             aria-label="Message input"
           />
         </div>
@@ -95,7 +97,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
         <button
           type="submit"
           disabled={disabled || (!input.trim() && !imageFile)}
-          className="p-2 sm:px-4 sm:py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="p-3 sm:px-5 sm:py-3 bg-app-purple text-white rounded-xl hover:bg-app-purple-dark disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-app"
           aria-label="Send message"
         >
           <Send className="h-5 w-5" />

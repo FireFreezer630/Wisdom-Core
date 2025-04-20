@@ -80,12 +80,14 @@ export const Sidebar: React.FC = () => {
     }
   };
 
+  const sidebarBg = isDarkMode ? 'bg-app-card-dark' : 'bg-app-card-light';
+
   return (
     <>
       {/* Toggle button */}
       <button
         onClick={toggleSidebar}
-        className="fixed z-50 top-4 left-4 p-2 rounded-md bg-purple-600 text-white shadow-md hover:bg-purple-700 transition-colors"
+        className="fixed z-50 top-4 left-4 p-2 rounded-xl bg-app-purple text-white shadow-md hover:bg-app-purple-dark transition-colors"
         aria-label="Toggle sidebar"
         style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       >
@@ -106,35 +108,38 @@ export const Sidebar: React.FC = () => {
 
       {/* Sidebar */}
       <div 
-        className={`fixed md:absolute top-0 left-0 h-full z-40 ${
-          isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'
-        } border-r shadow-lg transition-all duration-500 ease-in-out transform ${
-          isCollapsed ? '-translate-x-full' : 'translate-x-0 w-64'
-        } overflow-hidden`}
+        className={`fixed md:absolute top-0 left-0 h-full z-40 ${sidebarBg} 
+        border-r shadow-lg transition-all duration-500 ease-in-out transform 
+        ${isCollapsed ? '-translate-x-full' : 'translate-x-0 w-64'} 
+        rounded-tr-2xl rounded-br-2xl overflow-hidden`}
         style={{ width: isCollapsed ? '0' : '16rem' }}
       >
         {/* Content */}
-        <div className="h-full flex flex-col pt-16 overflow-x-hidden">
+        <div className="h-full flex flex-col pt-16 overflow-x-hidden px-3">
           <button
             onClick={handleNewConversation}
-            className="flex items-center gap-2 mx-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 mb-4 transition-colors"
+            className="flex items-center justify-center gap-2 mx-1 px-4 py-3 bg-app-purple text-white rounded-xl hover:bg-app-purple-dark mb-6 transition-colors shadow-sm"
           >
             <Plus className="h-5 w-5" />
-            <span>New Chat</span>
+            <span className="font-medium">New Chat</span>
           </button>
 
-          <div className="flex-1 overflow-y-auto space-y-2 p-2">
+          <div className="flex-1 overflow-y-auto space-y-2 p-1">
             {conversations.map((conversation) => (
               <div
                 key={conversation.id}
-                className={`group flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors ${
+                className={`group flex items-center gap-2 p-3 rounded-xl cursor-pointer transition-all duration-200 ${
                   activeConversationId === conversation.id
-                    ? isDarkMode ? 'bg-purple-900/50' : 'bg-purple-100'
-                    : isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
-                } ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}
+                    ? isDarkMode ? 'bg-app-purple/30 text-white' : 'bg-app-purple/10 text-gray-800'
+                    : isDarkMode ? 'text-gray-200 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100'
+                }`}
                 onClick={() => handleConversationSelect(conversation.id)}
               >
-                <MessageSquare className={`h-5 w-5 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} flex-shrink-0`} />
+                <MessageSquare className={`h-5 w-5 ${
+                  activeConversationId === conversation.id
+                    ? 'text-app-purple'
+                    : isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                } flex-shrink-0`} />
                 
                 {editingId === conversation.id ? (
                   <div className="flex-1 flex items-center gap-1">
@@ -142,7 +147,7 @@ export const Sidebar: React.FC = () => {
                       type="text"
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
-                      className={`flex-1 px-2 py-1 text-sm border rounded transition-colors ${
+                      className={`flex-1 px-3 py-1 text-sm border rounded-lg transition-colors ${
                         isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300'
                       }`}
                       onClick={(e) => e.stopPropagation()}
@@ -171,14 +176,14 @@ export const Sidebar: React.FC = () => {
                   </div>
                 ) : (
                   <>
-                    <span className="flex-1 truncate">{conversation.title}</span>
+                    <span className="flex-1 truncate font-medium">{conversation.title}</span>
                     <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-opacity duration-200">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           startEditing(conversation.id, conversation.title);
                         }}
-                        className="p-1 hover:text-blue-600 transition-colors"
+                        className="p-1 hover:text-app-purple transition-colors"
                         aria-label="Edit conversation title"
                       >
                         <Edit2 className="h-4 w-4" />

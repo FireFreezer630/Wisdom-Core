@@ -45,38 +45,41 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ role, content }) => {
 
   // Dynamic styling based on dark mode
   const userBubbleStyles = isUser 
-    ? 'bg-purple-600 text-white' 
+    ? 'bg-app-purple text-white' 
     : isDarkMode 
-      ? 'bg-gray-800 text-gray-100 border border-gray-700' 
-      : 'bg-white text-gray-800 border border-gray-100 shadow-sm';
+      ? 'bg-app-card-dark text-gray-100 border border-gray-700' 
+      : 'bg-app-card-light text-gray-800 border-0 shadow-app';
 
   const userIconStyles = isUser 
-    ? 'bg-purple-600' 
+    ? 'bg-app-purple' 
     : isDarkMode 
       ? 'bg-gray-700' 
-      : 'bg-gray-200';
+      : 'bg-app-purple/10';
 
   const textIconColor = isUser 
     ? 'text-white' 
-    : isDarkMode 
-      ? 'text-gray-300' 
-      : 'text-gray-600';
+    : 'text-app-purple';
 
   const actionButtonStyle = isDarkMode 
-    ? 'text-gray-400 hover:text-purple-400' 
-    : 'text-gray-500 hover:text-purple-600';
+    ? 'text-gray-400 hover:text-app-purple' 
+    : 'text-gray-500 hover:text-app-purple';
+
+  // Adjust bubble border radius based on sender
+  const bubbleRadius = isUser 
+    ? 'rounded-2xl rounded-tr-md' 
+    : 'rounded-2xl rounded-tl-md';
 
   return (
-    <div className={`flex gap-2 sm:gap-3 ${isUser ? 'flex-row-reverse' : ''} mb-4`}>
-      <div className={`flex-shrink-0 h-7 w-7 sm:h-8 sm:w-8 rounded-full flex items-center justify-center ${userIconStyles}`}>
+    <div className={`flex gap-3 sm:gap-4 ${isUser ? 'flex-row-reverse' : ''} mb-6 items-end`}>
+      <div className={`flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center ${userIconStyles}`}>
         {isUser ? (
           <User className={`h-4 w-4 sm:h-5 sm:w-5 ${textIconColor}`} />
         ) : (
           <Bot className={`h-4 w-4 sm:h-5 sm:w-5 ${textIconColor}`} />
         )}
       </div>
-      <div className={`flex-1 ${isUser ? 'mr-1 sm:mr-2' : 'ml-1 sm:ml-2'} max-w-[85%] sm:max-w-[90%]`}>
-        <div className={`px-3 py-2 sm:px-4 sm:py-2 rounded-lg ${userBubbleStyles}`}>
+      <div className={`flex-1 ${isUser ? 'mr-1 sm:mr-2' : 'ml-1 sm:ml-2'} max-w-[80%] sm:max-w-[85%]`}>
+        <div className={`px-4 py-3 sm:px-5 sm:py-4 ${bubbleRadius} ${userBubbleStyles} transition-all`}>
           <ReactMarkdown 
             className={`prose max-w-none text-sm sm:text-base ${isDarkMode ? 'prose-invert' : ''}`}
             remarkPlugins={[remarkMath]}
@@ -86,25 +89,27 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ role, content }) => {
           </ReactMarkdown>
         </div>
         {!isUser && (
-          <div className="flex gap-2 mt-1 sm:mt-2">
+          <div className="flex gap-2 mt-2 sm:mt-3 pl-1">
             <button
               onClick={copyToClipboard}
-              className={`p-1 rounded ${actionButtonStyle}`}
+              className={`p-1.5 rounded-lg ${actionButtonStyle} transition-colors ${isDarkMode ? 'bg-gray-800/50' : 'bg-gray-100/80'}`}
               title={isCopied ? 'Copied!' : 'Copy to clipboard'}
               aria-label={isCopied ? 'Copied!' : 'Copy to clipboard'}
             >
-              <Copy className="h-3 w-3 sm:h-4 sm:w-4" />
+              <Copy className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </button>
             <button
               onClick={speakText}
-              className={`p-1 rounded ${actionButtonStyle}`}
+              className={`p-1.5 rounded-lg ${actionButtonStyle} transition-colors ${isDarkMode ? 'bg-gray-800/50' : 'bg-gray-100/80'}`}
               title="Text to speech"
               aria-label="Read message aloud"
             >
-              <Volume2 className="h-3 w-3 sm:h-4 sm:w-4" />
+              <Volume2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </button>
             {isCopied && (
-              <span className="text-xs text-gray-500 dark:text-gray-400 self-center">Copied!</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 self-center bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                Copied!
+              </span>
             )}
           </div>
         )}

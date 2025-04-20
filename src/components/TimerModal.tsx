@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Clock, Timer as TimerIcon } from 'lucide-react';
+import { X, Clock, Timer as TimerIcon, Play, Square } from 'lucide-react';
 import { useChatStore } from '../store/chatStore';
 import { useTheme } from '../lib/ThemeProvider';
 
@@ -119,14 +119,14 @@ export const TimerModal: React.FC<TimerModalProps> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  const inputClasses = `w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+  const inputClasses = `w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-app-purple/50 ${
     isDarkMode 
-      ? 'bg-gray-700 border-gray-600 text-white' 
-      : 'bg-white border-gray-300 text-gray-900'
-  }`;
+      ? 'bg-gray-800/50 border-gray-700 text-white placeholder-gray-400' 
+      : 'bg-white border-gray-200 text-gray-900 placeholder-gray-500'
+  } transition-colors`;
 
-  const labelClasses = `block text-sm mb-1 ${
-    isDarkMode ? 'text-gray-300' : 'text-gray-600'
+  const labelClasses = `block text-sm font-medium mb-2 ${
+    isDarkMode ? 'text-gray-300' : 'text-gray-700'
   }`;
 
   const getStateColor = () => {
@@ -141,48 +141,49 @@ export const TimerModal: React.FC<TimerModalProps> = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
       <div 
-        className={`${
-          isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
-        } rounded-lg p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto`}
+        className={`relative ${
+          isDarkMode ? 'bg-app-card-dark text-white' : 'bg-white text-gray-800'
+        } rounded-2xl p-5 sm:p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-app`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="timer-title"
       >
-        <div className="flex justify-between items-center mb-4 sticky top-0 z-10">
-          <h2 id="timer-title" className="text-xl font-bold">Timer Settings</h2>
+        <div className="flex justify-between items-center mb-6 sticky top-0 z-10">
+          <h2 id="timer-title" className="text-xl font-bold bg-gradient-to-r from-app-purple to-purple-400 bg-clip-text text-transparent">Timer</h2>
           <button 
             onClick={onClose} 
-            className={`p-1 rounded-full ${
-              isDarkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'
-            }`}
+            className={`p-2 rounded-full ${
+              isDarkMode ? 'text-gray-400 hover:bg-gray-700/50' : 'text-gray-500 hover:bg-gray-100'
+            } transition-colors`}
             aria-label="Close timer settings"
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         {timer.endTime ? (
           <div className="text-center mb-6">
-            <div className="text-4xl font-bold mb-3">{timeLeft}</div>
-            <div className={`text-lg mb-4 ${getStateColor()}`}>
+            <div className="text-5xl font-bold mb-4 text-app-purple">{timeLeft}</div>
+            <div className={`text-lg mb-5 font-medium ${getStateColor()}`}>
               {timer.isPomodoro 
                 ? `${timer.pomodoroState.charAt(0).toUpperCase() + timer.pomodoroState.slice(1)} - Round ${timer.currentRound}/${settings.pomodoroRounds}`
                 : 'Study Timer'}
             </div>
             <button
               onClick={stopTimer}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              className="px-5 py-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors shadow-app flex items-center gap-2 mx-auto"
               aria-label="Stop timer"
             >
+              <Square className="h-4 w-4" />
               Stop Timer
             </button>
           </div>
         ) : (
           <>
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-3">Study Timer</h3>
+            <div className="mb-7">
+              <h3 className="text-lg font-semibold mb-4 text-app-purple">Study Timer</h3>
               <div className="flex gap-4 mb-4">
                 <div className="flex-1">
                   <label htmlFor="hours" className={labelClasses}>Hours</label>
@@ -210,16 +211,27 @@ export const TimerModal: React.FC<TimerModalProps> = ({ isOpen, onClose }) => {
               </div>
               <button
                 onClick={startTimer}
-                className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                className="w-full px-5 py-2.5 bg-app-purple text-white rounded-xl hover:bg-app-purple-dark transition-colors shadow-app flex items-center justify-center gap-2"
                 aria-label="Start study timer"
               >
+                <Play className="h-4 w-4" />
                 Start Timer
               </button>
             </div>
 
             <div className={`border-t pt-6 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-              <h3 className="text-lg font-semibold mb-3">Pomodoro Settings</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-app-purple">Pomodoro Settings</h3>
+                <button
+                  onClick={startPomodoro}
+                  className="px-5 py-2.5 bg-app-purple text-white rounded-xl hover:bg-app-purple-dark transition-colors shadow-app flex items-center gap-2"
+                  aria-label="Start pomodoro"
+                >
+                  <Play className="h-4 w-4" />
+                  Start Pomodoro
+                </button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <div>
                   <label htmlFor="pomodoro-work" className={labelClasses}>Work (minutes)</label>
                   <input
@@ -254,7 +266,7 @@ export const TimerModal: React.FC<TimerModalProps> = ({ isOpen, onClose }) => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="pomodoro-rounds" className={labelClasses}>Rounds</label>
+                  <label htmlFor="pomodoro-rounds" className={labelClasses}>Rounds before long break</label>
                   <input
                     id="pomodoro-rounds"
                     type="number"
@@ -265,13 +277,6 @@ export const TimerModal: React.FC<TimerModalProps> = ({ isOpen, onClose }) => {
                   />
                 </div>
               </div>
-              <button
-                onClick={startPomodoro}
-                className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-                aria-label="Start pomodoro timer"
-              >
-                Start Pomodoro
-              </button>
             </div>
           </>
         )}

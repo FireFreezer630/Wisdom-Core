@@ -91,25 +91,39 @@ function App() {
     }
   };
 
+  const bgClass = isDarkMode 
+    ? 'bg-app-bg-dark' 
+    : 'bg-gradient-to-br from-app-bg-light to-app-bg';
+
+  const headerClass = isDarkMode 
+    ? 'bg-app-card-dark border-gray-700' 
+    : 'bg-app-card-light border-app-bg';
+
   if (!activeConversation) {
     return (
-      <div className={`${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gradient-to-br from-purple-50 to-purple-100 text-gray-800'} h-screen flex`}>
+      <div className={`${bgClass} min-h-screen flex text-gray-800 dark:text-white`}>
         <Sidebar />
         <main className="w-full flex items-center justify-center pl-0">
-          <p className={isDarkMode ? "text-gray-400" : "text-gray-500"}>Select or create a conversation to start chatting</p>
+          <div className={`${headerClass} shadow-app dark:shadow-app-dark rounded-2xl p-8 max-w-md text-center`}>
+            <GraduationCap className="h-16 w-16 mx-auto mb-4 text-app-purple" />
+            <h1 className="text-xl font-bold mb-4">Welcome to WisdomCore</h1>
+            <p className={isDarkMode ? "text-gray-400" : "text-gray-500"}>
+              Select or create a conversation to start chatting
+            </p>
+          </div>
         </main>
       </div>
     );
   }
 
   return (
-    <div className={`${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gradient-to-br from-purple-50 to-purple-100 text-gray-800'} h-screen flex`}>
+    <div className={`${bgClass} min-h-screen flex text-gray-800 dark:text-white`}>
       <Sidebar />
       
       <main className="w-full flex flex-col">
-        <div className={`flex items-center justify-between p-4 border-b ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} relative z-10`}>
+        <div className={`flex items-center justify-between p-4 border-b ${headerClass} relative z-10 shadow-sm`}>
           <div className="flex items-center gap-3 pl-16 md:pl-16">
-            <div className="h-10 w-10 md:h-12 md:w-12 bg-purple-600 rounded-full flex items-center justify-center">
+            <div className="h-10 w-10 md:h-12 md:w-12 bg-app-purple rounded-xl flex items-center justify-center">
               <GraduationCap className="h-5 w-5 md:h-6 md:w-6 text-white" />
             </div>
             <h1 className="text-xl md:text-2xl font-bold truncate">WisdomCore</h1>
@@ -117,7 +131,9 @@ function App() {
           <div className="flex items-center gap-2">
             <button
               onClick={toggleDarkMode}
-              className={`p-2 rounded-full ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+              className={`p-2 rounded-xl ${
+                isDarkMode ? 'bg-app-card-dark hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
+              } transition-colors shadow-sm`}
               aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {isDarkMode ? (
@@ -128,17 +144,21 @@ function App() {
             </button>
             <button
               onClick={() => setIsTimerOpen(true)}
-              className={`p-2 rounded-full relative ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+              className={`p-2 rounded-xl relative ${
+                isDarkMode ? 'bg-app-card-dark hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
+              } transition-colors shadow-sm`}
               aria-label="Timer settings"
             >
               <Clock className={`h-5 w-5 md:h-6 md:w-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
               {timer.endTime && (
-                <div className="absolute -top-1 -right-1 h-3 w-3 bg-purple-600 rounded-full" />
+                <div className="absolute -top-1 -right-1 h-3 w-3 bg-app-purple rounded-full" />
               )}
             </button>
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className={`p-2 rounded-full ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+              className={`p-2 rounded-xl ${
+                isDarkMode ? 'bg-app-card-dark hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
+              } transition-colors shadow-sm`}
               aria-label="Open settings"
             >
               <Settings className={`h-5 w-5 md:h-6 md:w-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
@@ -147,8 +167,8 @@ function App() {
         </div>
 
         <div className="flex-1 overflow-hidden">
-          <div className="h-full flex flex-col p-2 md:p-4">
-            <div className="flex-1 overflow-y-auto space-y-4 mb-4 px-0 md:px-2">
+          <div className="h-full flex flex-col p-4 md:p-6">
+            <div className="flex-1 overflow-y-auto space-y-4 mb-4 px-0 md:px-2 scrollbar-thin">
               {activeConversation.messages.map((message, index) => (
                 <ChatMessage
                   key={index}
@@ -159,16 +179,18 @@ function App() {
             </div>
 
             {error && (
-              <div className="text-red-500 text-sm mb-4">
+              <div className="text-red-500 text-sm mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-900/20">
                 {error}
               </div>
             )}
 
             {usage && (
-              <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mb-4`}>
-                Tokens used: {usage.total_tokens} 
-                (Prompt: {usage.prompt_tokens}, 
-                Completion: {usage.completion_tokens})
+              <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mb-4 text-center`}>
+                <span className="px-3 py-1 rounded-full bg-app-bg dark:bg-gray-800 inline-block">
+                  Tokens used: {usage.total_tokens} 
+                  (Prompt: {usage.prompt_tokens}, 
+                  Completion: {usage.completion_tokens})
+                </span>
               </div>
             )}
 
