@@ -8,7 +8,7 @@ import { TimerModal } from './components/TimerModal';
 import { streamCompletion, createMessageContent } from './lib/openai';
 import { useChatStore } from './store/chatStore';
 import { useTheme } from './lib/ThemeProvider';
-import type { Message, ChatState } from './types';
+import type { Message, ChatState, MessageContent } from './types';
 
 function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -43,6 +43,7 @@ function App() {
       content: messageContent
     };
     
+    console.log('Sending user message');
     const updatedMessages = [...activeConversation.messages, userMessage];
     updateConversation(activeConversationId, { messages: updatedMessages });
     
@@ -51,6 +52,8 @@ function App() {
 
     try {
       let assistantMessage = '';
+      let assistantContent: MessageContent[] = [];
+      let flashcardProcessed = false; // Flag to track if we've added a flashcard
       
       const newMessage: Message = {
         role: 'assistant',
@@ -71,23 +74,102 @@ function App() {
         userMessage
       ];
 
+      console.log('Starting streamCompletion with messages:', messagesWithSystem.length);
+
       await streamCompletion(
         messagesWithSystem,
         (chunk) => {
           assistantMessage += chunk;
-          updateConversation(activeConversationId, {
-            messages: [...updatedMessages, { role: 'assistant', content: assistantMessage }]
-          });
+          
+          // Update the conversation with the current text
+          if (assistantContent.length > 0) {
+            // If we have flashcards, update the text part
+            const textContent = assistantContent.find(c => c.type === 'text');
+            if (textContent && textContent.type === 'text') {
+              textContent.text = assistantMessage;
+            } else {
+              // Add text content if we don't have it yet
+              assistantContent = [{ type: 'text', text: assistantMessage }, ...assistantContent];
+            }
+            
+            updateConversation(activeConversationId, {
+              messages: [...updatedMessages, { 
+                role: 'assistant', 
+                content: assistantContent
+              }]
+            });
+          } else {
+            // Simple string update if no special content yet
+            updateConversation(activeConversationId, {
+              messages: [...updatedMessages, { 
+                role: 'assistant', 
+                content: assistantMessage 
+              }]
+            });
+          }
         },
         (newUsage) => {
           setUsage(newUsage);
+        },
+        (flashcardContent) => {
+          if (flashcardProcessed) {
+            console.log("Ignoring duplicate flashcard content");
+            return;
+          }
+          
+          console.log("Received flashcard content:", flashcardContent.type);
+          flashcardProcessed = true; // Mark that we've processed a flashcard
+          
+          // Add or replace flashcard content
+          const existingIndex = assistantContent.findIndex(content => {
+            if (flashcardContent.type === 'flashcard' && content.type === 'flashcard') {
+              return flashcardContent.flashcard?.id === content.flashcard?.id;
+            }
+            if (flashcardContent.type === 'flashcard_set' && content.type === 'flashcard_set') {
+              return flashcardContent.flashcardSet?.id === content.flashcardSet?.id;
+            }
+            return false;
+          });
+          
+          if (existingIndex !== -1) {
+            // Replace existing content
+            assistantContent[existingIndex] = flashcardContent;
+            console.log("Replaced existing flashcard");
+          } else {
+            // Add new content
+            if (assistantContent.length > 0) {
+              assistantContent = [...assistantContent, flashcardContent];
+            } else {
+              // First content, add with text if we have it
+              if (assistantMessage) {
+                assistantContent = [{ type: 'text', text: assistantMessage }, flashcardContent];
+              } else {
+                assistantContent = [flashcardContent];
+              }
+            }
+            console.log("Added new flashcard, total content items:", assistantContent.length);
+          }
+          
+          // Update the conversation with text and flashcards
+          const finalMessage: Message = { 
+            role: 'assistant' as const, 
+            content: assistantContent
+          };
+          
+          console.log("Updating conversation with flashcard content");
+          updateConversation(activeConversationId, {
+            messages: [...updatedMessages, finalMessage]
+          });
         }
       );
 
       setIsLoading(false);
+      console.log('Completed message processing. Final content:', 
+        assistantContent.length > 0 ? `${assistantContent.length} items` : 'Text only');
     } catch (error) {
       setIsLoading(false);
       setError('Failed to get response. Please try again.');
+      console.error('Error in handleSendMessage:', error);
     }
   };
 

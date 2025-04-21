@@ -5,22 +5,27 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 import { useTheme } from '../lib/ThemeProvider';
+import { FlashcardRenderer } from './flashcards/FlashcardRenderer';
 import type { Message, MessageContent } from '../types';
 
 interface ChatMessageProps {
-  role: 'system' | 'user' | 'assistant';
-  content: string | MessageContent[];
+  role: 'system' | 'user' | 'assistant' | 'function';
+  content: string | MessageContent[] | null;
 }
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({ role, content }) => {
   const [isCopied, setIsCopied] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const isUser = role === 'user';
+  const isFunction = role === 'function';
   const { isDarkMode } = useTheme();
   
-  const getMessageContent = (content: string | MessageContent[]): string => {
+  const getMessageContent = (content: string | MessageContent[] | null): string => {
     if (typeof content === 'string') {
       return content;
+    }
+    if (!content) {
+      return '';
     }
     return content
       .filter(item => item.type === 'text' && item.text)
@@ -29,6 +34,20 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ role, content }) => {
   };
 
   const messageContent = getMessageContent(content);
+
+  // Determine if the message contains flashcards
+  const hasFlashcards = typeof content !== 'string' && content && content.some(
+    item => item.type === 'flashcard' || item.type === 'flashcard_set'
+  );
+
+  // If this is a function message, handle it differently
+  if (isFunction) {
+    return (
+      <div className="text-xs text-gray-500 dark:text-gray-400 italic text-center my-1">
+        {messageContent || 'Function executed'}
+      </div>
+    );
+  }
 
   // Clean up TTS on unmount
   useEffect(() => {
@@ -98,14 +117,29 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ role, content }) => {
       )}
       
       <div className={`flex-1 ${isUser ? 'mr-1 sm:mr-2' : 'ml-0'} max-w-[90%] sm:max-w-[92%]`}>
-        <div className={`px-4 py-3 sm:px-5 sm:py-4 ${bubbleRadius} ${userBubbleStyles} transition-all overflow-x-auto`}>
-          <ReactMarkdown 
-            className={`prose max-w-none text-sm sm:text-base ${isDarkMode ? 'prose-invert' : ''} math-renderer`}
-            remarkPlugins={[remarkMath]}
-            rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: false, output: 'html' }]]}
-          >
-            {messageContent}
-          </ReactMarkdown>
+        <div className={`px-4 py-3 sm:px-5 sm:py-4 ${bubbleRadius} ${userBubbleStyles} transition-all ${hasFlashcards ? '' : 'overflow-x-auto'}`}>
+          {/* Render text content */}
+          {messageContent && (
+            <ReactMarkdown 
+              className={`prose max-w-none text-sm sm:text-base ${isDarkMode ? 'prose-invert' : ''} math-renderer`}
+              remarkPlugins={[remarkMath]}
+              rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: false, output: 'html' }]]}
+            >
+              {messageContent}
+            </ReactMarkdown>
+          )}
+          
+          {/* Render flashcards if present */}
+          {typeof content !== 'string' && content && (
+            <div className="mt-4 space-y-4">
+              {content
+                .filter(item => item.type === 'flashcard' || item.type === 'flashcard_set')
+                .map((item, index) => (
+                  <FlashcardRenderer key={index} content={item} />
+                ))
+              }
+            </div>
+          )}
         </div>
         {!isUser && (
           <div className="flex gap-2 mt-2 sm:mt-3 pl-1">

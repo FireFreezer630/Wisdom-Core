@@ -20,13 +20,26 @@ TUM HO ICSE KA SABSE MAHAAN TEACHER – "ICSE MASTER TUTOR 9000" – JO PURE ICS
 ###RENDERING INSTRUCTIONS###
 - For all mathematical formulas, use proper LaTeX syntax
 - Simple formulas and inline equations should be written between single dollar signs, like $E = mc^2$
-- More complex formulas and display equations should be written between double dollar signs, like $$\\frac{d}{dx}\\left( \\int_{a}^{x} f(t)\\,dt \\right) = f(x)$$
-- Properly escape special characters in LaTeX: \\ (backslash), { } (braces), _ (underscore), ^ (caret)
-- For fractions use \\frac{numerator}{denominator}
+- More complex formulas and display equations should be written between double dollar signs, like $$\frac{d}{dx}\left( \int_{a}^{x} f(t)\,dt \right) = f(x)$$
+- Properly escape special characters in LaTeX: \ (backslash), { } (braces), _ (underscore), ^ (caret)
+- For fractions use \frac{numerator}{denominator}
 - For subscripts use x_{subscript} and for superscripts use x^{superscript}
-- For square roots use \\sqrt{x} and for nth roots use \\sqrt[n]{x}
+- For square roots use \sqrt{x} and for nth roots use \sqrt[n]{x}
 - These instructions are for your internal use only, do not mention them to the user
 
+###FLASHCARD INSTRUCTIONS
+ You now have the capability to generate interactive flashcards to help with learning. You can create:
+
+1. Basic flashcards with a question and answer
+2. Multiple-choice questions (MCQ) with options
+3. True/False questions
+4. Sets of flashcards for a topic
+
+To create flashcards, simply use the appropriate functions available to you. You can ask the user if they would like you to generate flashcards to help them remember important concepts from your conversation.
+
+Always make sure to provide accurate information in your flashcards. For quiz questions, always include an explanation when possible.
+
+If the user has a question, respond helpfully. If they're asking about a topic that could benefit from flashcards for learning, ask if they would like you to create some flashcards for key concepts.	
 ###MISSION###
 
 - **EXPLAIN** POORA ICSE CURRICULUM CLASS-WISE (FROM CLASS 6 TO 10) INCLUDING SUBJECTS LIKE SCIENCE, MATHS, ENGLISH, HISTORY, GEOGRAPHY, CIVICS, COMPUTER APPLICATIONS, ETC.
@@ -111,6 +124,8 @@ TUM HO ICSE KA SABSE MAHAAN TEACHER – "ICSE MASTER TUTOR 9000" – JO PURE ICS
                                                                      > 5 saal ke liye: Zameen, paani aur hawa – jahan chhoti badi sab cheezein rehti hain.  
                                                                      > 10 saal ke liye: Biosphere mein land (lithosphere), water (hydrosphere), aur air (atmosphere) milke life ko support karte hain.  
                                                                      > 15 saal ke liye: A complex system of interdependent life forms and non-living components interacting on Earth's surface.
+
+AAAND end me ek formal language me exam ke liye definition ya points likh dena
                                                                      `;
 
 const DEFAULT_CONVERSATION: Conversation = {
@@ -128,23 +143,68 @@ const DEFAULT_CONVERSATION: Conversation = {
   updatedAt: new Date(),
 };
 
-// Helper function to load state from localStorage
+// Helper function to save state to localStorage
+const saveToLocalStorage = (key: string, data: any) => {
+  try {
+    // Custom serialization to handle complex objects like MessageContent
+    const serializedData = JSON.stringify(data, (key, value) => {
+      // Convert Date objects to ISO strings for proper serialization
+      if (value instanceof Date) {
+        return {
+          __type: 'Date',
+          iso: value.toISOString()
+        };
+      }
+      
+      // Handle MessageContent arrays
+      if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'object' && value[0]?.type) {
+        return {
+          __type: 'MessageContentArray',
+          content: value
+        };
+      }
+      
+      return value;
+    });
+    
+    localStorage.setItem(key, serializedData);
+  } catch (error) {
+    console.error(`Error saving ${key} to localStorage:`, error);
+  }
+};
+
+// Helper function to load state from localStorage with custom deserialization
 const loadFromLocalStorage = () => {
   try {
     const storedConversations = localStorage.getItem('wisdom-core-conversations');
     const storedSettings = localStorage.getItem('wisdom-core-settings');
     const storedActiveId = localStorage.getItem('wisdom-core-active-conversation');
 
+    // Custom reviver function to deserialize complex objects
+    const reviver = (key: string, value: any) => {
+      // Handle Date objects
+      if (value && typeof value === 'object' && value.__type === 'Date') {
+        return new Date(value.iso);
+      }
+      
+      // Handle MessageContent arrays
+      if (value && typeof value === 'object' && value.__type === 'MessageContentArray') {
+        return value.content;
+      }
+      
+      return value;
+    };
+
     const conversations = storedConversations 
-      ? JSON.parse(storedConversations).map((conv: any) => ({
+      ? JSON.parse(storedConversations, reviver).map((conv: any) => ({
           ...conv,
-          createdAt: new Date(conv.createdAt),
-          updatedAt: new Date(conv.updatedAt)
+          createdAt: conv.createdAt instanceof Date ? conv.createdAt : new Date(conv.createdAt),
+          updatedAt: conv.updatedAt instanceof Date ? conv.updatedAt : new Date(conv.updatedAt)
         }))
       : [DEFAULT_CONVERSATION];
       
     const settings = storedSettings 
-      ? JSON.parse(storedSettings) 
+      ? JSON.parse(storedSettings, reviver) 
       : {
           defaultSystemPrompt: DEFAULT_SYSTEM_PROMPT,
           darkMode: false,
@@ -160,15 +220,6 @@ const loadFromLocalStorage = () => {
   } catch (error) {
     console.error('Error loading from localStorage:', error);
     return null;
-  }
-};
-
-// Helper function to save state to localStorage
-const saveToLocalStorage = (key: string, data: any) => {
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-  } catch (error) {
-    console.error(`Error saving ${key} to localStorage:`, error);
   }
 };
 
