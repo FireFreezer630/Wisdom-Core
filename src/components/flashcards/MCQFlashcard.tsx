@@ -1,140 +1,113 @@
 import React, { useState } from 'react';
 import { MCQFlashcard as MCQFlashcardType } from '../../types';
+import { MathText } from '../MathText';
+import { Check, X } from 'lucide-react';
 
 interface MCQFlashcardProps {
   flashcard: MCQFlashcardType;
 }
 
-export function MCQFlashcard({ flashcard }: MCQFlashcardProps) {
+export const MCQFlashcard: React.FC<MCQFlashcardProps> = ({ flashcard }) => {
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
-  const [showAnswer, setShowAnswer] = useState(false);
-  const [showExplanation, setShowExplanation] = useState(false);
-  
+  const [revealed, setRevealed] = useState(false);
+
   const handleOptionSelect = (optionId: string) => {
-    if (!showAnswer) {
+    if (!revealed) {
       setSelectedOptionId(optionId);
+      setRevealed(true);
     }
   };
-  
-  const handleCheckAnswer = () => {
-    setShowAnswer(true);
-  };
-  
-  const handleReset = () => {
+
+  const resetCard = () => {
     setSelectedOptionId(null);
-    setShowAnswer(false);
-    setShowExplanation(false);
+    setRevealed(false);
   };
-  
-  const isCorrect = selectedOptionId === flashcard.correctOptionId;
-  
+
   return (
-    <div className="w-full max-w-lg mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-      <div className="p-5">
-        <div className="flex justify-between items-center mb-4">
-          <div className="text-sm font-medium text-app-purple dark:text-app-purple-light">
-            Multiple Choice Question
-          </div>
+    <div className="w-full p-6 rounded-xl bg-white dark:bg-gray-700 shadow">
+      {/* Question */}
+      <div className="mb-6">
+        <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">Question</div>
+        <div className="text-gray-900 dark:text-white">
+          <MathText text={flashcard.question} />
         </div>
-        
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">{flashcard.question}</h3>
-        
         {flashcard.imageUrl && (
-          <div className="mb-4">
-            <img 
-              src={flashcard.imageUrl} 
-              alt="Question illustration" 
-              className="rounded-lg max-h-60 object-contain mx-auto"
-            />
-          </div>
+          <img 
+            src={flashcard.imageUrl} 
+            alt="Question illustration" 
+            className="mt-4 max-w-full h-auto rounded-lg"
+          />
         )}
-        
-        <div className="space-y-2 mb-4">
-          {flashcard.options.map((option) => (
+      </div>
+
+      {/* Options */}
+      <div className="space-y-3">
+        {flashcard.options.map((option) => {
+          const isCorrect = option.id === flashcard.correctOptionId;
+          const isSelected = option.id === selectedOptionId;
+          const showResult = revealed && (isSelected || isCorrect);
+          
+          return (
             <button
               key={option.id}
               onClick={() => handleOptionSelect(option.id)}
-              disabled={showAnswer}
-              className={`w-full p-3 rounded-lg text-left border transition-colors ${
-                selectedOptionId === option.id
-                  ? showAnswer
-                    ? selectedOptionId === flashcard.correctOptionId
-                      ? 'bg-green-100 border-green-300 dark:bg-green-900/30 dark:border-green-700'
-                      : 'bg-red-100 border-red-300 dark:bg-red-900/30 dark:border-red-700'
-                    : 'bg-app-purple/10 border-app-purple/30 dark:bg-app-purple/20 dark:border-app-purple/40'
-                  : showAnswer && option.id === flashcard.correctOptionId
-                    ? 'bg-green-100 border-green-300 dark:bg-green-900/30 dark:border-green-700'
-                    : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-650'
-              }`}
-              aria-label={`Option: ${option.text}`}
+              disabled={revealed}
+              className={`w-full p-4 rounded-lg text-left transition-colors relative
+                ${revealed
+                  ? isCorrect
+                    ? 'bg-green-100 dark:bg-green-900/30 border-green-500'
+                    : isSelected
+                      ? 'bg-red-100 dark:bg-red-900/30 border-red-500'
+                      : 'bg-gray-100 dark:bg-gray-800'
+                  : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700'
+                }
+                border-2
+                ${revealed
+                  ? isCorrect
+                    ? 'border-green-500'
+                    : isSelected
+                      ? 'border-red-500'
+                      : 'border-transparent'
+                  : 'border-transparent'
+                }`}
             >
-              <span className={`font-medium ${
-                showAnswer && option.id === flashcard.correctOptionId
-                  ? 'text-green-700 dark:text-green-300'
-                  : showAnswer && selectedOptionId === option.id
-                    ? 'text-red-700 dark:text-red-300'
-                    : 'text-gray-700 dark:text-gray-200'
-              }`}>
-                {option.text}
-              </span>
-            </button>
-          ))}
-        </div>
-        
-        <div className="flex justify-between">
-          {!showAnswer && selectedOptionId && (
-            <button
-              onClick={handleCheckAnswer}
-              className="px-4 py-2 bg-app-purple hover:bg-app-purple-dark text-white rounded-lg transition-colors"
-            >
-              Check Answer
-            </button>
-          )}
-          
-          {showAnswer && (
-            <button
-              onClick={handleReset}
-              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-lg transition-colors"
-            >
-              Try Again
-            </button>
-          )}
-        </div>
-        
-        {showAnswer && (
-          <div className={`mt-4 p-3 rounded-lg ${isCorrect 
-            ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300' 
-            : 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300'}`}
-          >
-            <p className="font-medium">
-              {isCorrect ? 'Correct!' : 'Incorrect!'} 
-            </p>
-            <p className="mt-1 text-sm">
-              {isCorrect 
-                ? 'You selected the right answer.' 
-                : `The correct answer is: ${flashcard.options.find(o => o.id === flashcard.correctOptionId)?.text}`
-              }
-            </p>
-          </div>
-        )}
-        
-        {flashcard.explanation && showAnswer && (
-          <div className="mt-4">
-            <button
-              onClick={() => setShowExplanation(!showExplanation)}
-              className="text-sm text-app-purple dark:text-app-purple-light font-medium flex items-center gap-1"
-            >
-              {showExplanation ? "Hide Explanation" : "Show Explanation"}
-            </button>
-            
-            {showExplanation && (
-              <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                <p className="text-sm text-gray-700 dark:text-gray-300">{flashcard.explanation}</p>
+              <div className="flex items-start gap-3">
+                <div className="flex-1">
+                  <MathText text={option.text} />
+                </div>
+                {showResult && (
+                  <div className={`flex-shrink-0 ${isCorrect ? 'text-green-500' : 'text-red-500'}`}>
+                    {isCorrect ? <Check size={20} /> : <X size={20} />}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        )}
+            </button>
+          );
+        })}
       </div>
+
+      {/* Explanation (shown after selection) */}
+      {revealed && flashcard.explanation && (
+        <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-600">
+          <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Explanation</div>
+          <div className="text-gray-700 dark:text-gray-300">
+            <MathText text={flashcard.explanation} />
+          </div>
+        </div>
+      )}
+
+      {/* Reset button */}
+      {revealed && (
+        <div className="mt-6 flex justify-center">
+          <button
+            onClick={resetCard}
+            className="px-4 py-2 text-sm font-medium text-app-purple dark:text-app-purple-light 
+              hover:bg-app-purple/10 dark:hover:bg-app-purple/20 rounded-lg transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      )}
     </div>
   );
-} 
+};

@@ -130,9 +130,10 @@ export const Sidebar: React.FC = () => {
       <div 
         ref={sidebarRef}
         className={`fixed md:fixed top-0 left-0 h-full z-40 ${sidebarBg} 
-        border-r shadow-lg transition-all duration-500 ease-in-out transform 
-        ${isCollapsed ? '-translate-x-full' : 'translate-x-0'} 
-        rounded-tr-2xl rounded-br-2xl overflow-hidden`}
+          ${isDarkMode ? 'border-r border-gray-800' : 'border-r border-gray-200'}
+          shadow-lg transition-all duration-500 ease-in-out transform 
+          ${isCollapsed ? '-translate-x-full' : 'translate-x-0'} 
+          rounded-tr-2xl rounded-br-2xl overflow-hidden`}
         style={{ width: isCollapsed ? '0' : '16rem' }}
       >
         {/* Content */}

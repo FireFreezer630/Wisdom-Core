@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type { Flashcard, BasicFlashcard, MCQFlashcard, TrueFalseFlashcard, FlashcardSet } from '../types';
 import { functionDefinitions } from '../types';
 import { processFunctionCall } from './flashcardHandler';
+import { findFirstImageUrl } from './findFirstImageUrl';
 
 const baseURL = import.meta.env.VITE_OPENAI_API_ENDPOINT;
 const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
@@ -56,6 +57,8 @@ export const streamCompletion = async (
       messages: openAIMessages,
       model,
       stream: true,
+      max_tokens: 2048, // Increased token limit for larger flashcard sets
+      temperature: 0.7,
       stream_options: { include_usage: true },
       functions: functionDefinitions,
       function_call: 'auto'
@@ -65,51 +68,81 @@ export const streamCompletion = async (
     let accumulatedText = '';
     let accumulatedFunctionCall: Partial<FunctionCall> = {};
     let functionCallInProgress = false;
-    let functionCallProcessed = false; // Flag to track processed function calls
+    let functionCallProcessed = false;
     
-    // Helper function to process flashcard content and return appropriate message
-    const processFlashcardFunction = () => {
+    // Helper function to process function calls and return appropriate message
+    const processFunctionCallResult = async () => {
       if (!accumulatedFunctionCall.name || 
           !accumulatedFunctionCall.arguments || 
-          !onFlashcardContent || 
           functionCallProcessed) {
         return false;
       }
-      
+
       try {
-        const flashcardContent = processFunctionCall(
-          accumulatedFunctionCall.name, 
-          accumulatedFunctionCall.arguments
-        );
-        
-        if (flashcardContent) {
-          console.log('Flashcard generated successfully:', flashcardContent.type);
-          functionCallProcessed = true; // Mark as processed
-          onFlashcardContent(flashcardContent);
+        // Handle image search function
+        if (accumulatedFunctionCall.name === 'findFirstImageUrl') {
+          const args = JSON.parse(accumulatedFunctionCall.arguments);
+          const result = await findFirstImageUrl(args);
           
-          // Add response text to indicate successful flashcard creation
-          let responseText = '';
-          switch (accumulatedFunctionCall.name) {
-            case 'create_flashcard':
-              responseText = 'I\'ve created a flashcard for you.';
-              break;
-            case 'create_mcq':
-              responseText = 'I\'ve created a multiple-choice question for you.';
-              break;
-            case 'create_truefalse':
-              responseText = 'I\'ve created a true/false question for you.';
-              break;
-            case 'create_flashcard_set':
-              responseText = 'I\'ve created a set of flashcards for you.';
-              break;
+          if (result) {
+            functionCallProcessed = true;
+            
+            if (result.error) {
+              accumulatedText += `\n\nI couldn't find an image: ${result.error}`;
+              onChunk(`\n\nI couldn't find an image: ${result.error}`);
+            } else if (result.imageUrl) {
+              if (onFlashcardContent) {
+                onFlashcardContent({
+                  type: 'search_result',
+                  searchResult: result
+                });
+              }
+              
+              accumulatedText += `\n\nI found an image${result.title ? ` titled "${result.title}"` : ''}.`;
+              onChunk(`\n\nI found an image${result.title ? ` titled "${result.title}"` : ''}.`);
+            }
+            
+            return true;
           }
+        }
+        // Handle flashcard functions
+        else {
+          const flashcardContent = processFunctionCall(
+            accumulatedFunctionCall.name, 
+            accumulatedFunctionCall.arguments
+          );
           
-          if (responseText && !accumulatedText.includes(responseText)) {
-            accumulatedText += '\n\n' + responseText;
-            onChunk('\n\n' + responseText);
+          if (flashcardContent) {
+            console.log('Flashcard generated successfully:', flashcardContent.type);
+            functionCallProcessed = true;
+            if (onFlashcardContent) {
+              onFlashcardContent(flashcardContent);
+            }
+            
+            let responseText = '';
+            switch (accumulatedFunctionCall.name) {
+              case 'create_flashcard':
+                responseText = 'I\'ve created a flashcard for you.';
+                break;
+              case 'create_mcq':
+                responseText = 'I\'ve created a multiple-choice question for you.';
+                break;
+              case 'create_truefalse':
+                responseText = 'I\'ve created a true/false question for you.';
+                break;
+              case 'create_flashcard_set':
+                const set = (flashcardContent as { flashcardSet: FlashcardSet }).flashcardSet;
+                responseText = `I've created a set of ${set.cards.length} flashcards about "${set.title}" for you.`;
+                break;
+            }
+            
+            if (responseText && !accumulatedText.includes(responseText)) {
+              accumulatedText += '\n\n' + responseText;
+              onChunk('\n\n' + responseText);
+            }
+            
+            return true;
           }
-          
-          return true;
         }
       } catch (error) {
         console.error('Error processing function call:', error);
@@ -152,7 +185,6 @@ export const streamCompletion = async (
       const isEndOfFunctionCall = part.choices[0]?.finish_reason === 'function_call';
       const hasValidJson = accumulatedFunctionCall.arguments && isCompleteJson(accumulatedFunctionCall.arguments);
       
-      // Process at end of stream or if we detect complete JSON
       if (functionCallInProgress && (isEndOfFunctionCall || hasValidJson)) {
         const logMessage = isEndOfFunctionCall
           ? 'Function call complete. Processing at end of stream...'
@@ -160,10 +192,7 @@ export const streamCompletion = async (
         
         console.log(logMessage);
         
-        // Process the flashcard function
-        processFlashcardFunction();
-      } else if (functionCallInProgress && accumulatedFunctionCall.arguments) {
-        console.log('Function call in progress, waiting for complete data...');
+        await processFunctionCallResult();
       }
       
       if (part.usage) {
@@ -185,11 +214,11 @@ export const streamCompletion = async (
 };
 
 /**
- * Helper function to check if a JSON string is complete/valid and possibly a flashcard
+ * Helper function to check if a JSON string is complete/valid
  */
 function isCompleteJson(jsonString: string): boolean {
   try {
-    // First do a quick check for common JSON patterns
+    // Quick check for JSON object structure
     if (!jsonString.includes('{') || !jsonString.includes('}')) {
       return false;
     }
@@ -202,57 +231,28 @@ function isCompleteJson(jsonString: string): boolean {
     for (let i = 0; i < jsonString.length; i++) {
       const char = jsonString[i];
       
-      // Handle strings and escaped characters
       if (char === '"' && !escaped) {
         inString = !inString;
       }
       
       escaped = inString && char === '\\' && !escaped;
       
-      // Only count braces when not inside a string
       if (!inString) {
         if (char === '{') {
           braceCount++;
         } else if (char === '}') {
           braceCount--;
-          
-          // Closing brace without an opening brace means malformed JSON
-          if (braceCount < 0) {
-            return false;
-          }
+          if (braceCount < 0) return false;
         }
       }
     }
     
-    // If braces aren't balanced, it's incomplete
-    if (braceCount !== 0) {
-      return false;
-    }
+    if (braceCount !== 0) return false;
     
-    // Try to actually parse it
-    const data = JSON.parse(jsonString);
-    
-    // Check if it looks like a flashcard-related structure
-    const isFlashcardRelated = 
-      // Basic flashcard
-      (data.type === 'basic' && typeof data.question === 'string' && typeof data.answer === 'string') ||
-      // MCQ flashcard
-      (data.type === 'mcq' && typeof data.question === 'string' && Array.isArray(data.options)) ||
-      // True/False flashcard
-      (data.type === 'truefalse' && typeof data.question === 'string' && typeof data.isTrue === 'boolean') ||
-      // Flashcard set
-      (data.cards && Array.isArray(data.cards) && typeof data.title === 'string');
-    
-    // If we get here and it looks like a flashcard, it's valid
-    if (isFlashcardRelated) {
-      console.log('Valid flashcard JSON detected');
-      return true;
-    }
-    
-    // It's valid JSON but not a flashcard
-    return false;
+    // Try to parse the JSON
+    JSON.parse(jsonString);
+    return true;
   } catch (e) {
-    // If it fails to parse, it's incomplete
     return false;
   }
 }
@@ -285,145 +285,4 @@ export const createMessageContent = async (text: string, imageFile?: File): Prom
   }
   
   return content;
-};
-
-/**
- * Parse flashcard JSON from assistant responses
- * @param text Assistant response text that may contain JSON
- * @returns Array of MessageContent objects for any flashcards found
- */
-export const parseFlashcards = (text: string) => {
-  // More robust JSON extraction regex
-  // This pattern attempts to find complete JSON objects by properly balancing braces
-  const extractJsonObjects = (text: string): string[] => {
-    const results: string[] = [];
-    let braceCount = 0;
-    let currentObject = '';
-    let inString = false;
-    let escaped = false;
-    
-    for (let i = 0; i < text.length; i++) {
-      const char = text[i];
-      
-      // Handle strings and escaped characters
-      if (char === '"' && !escaped) {
-        inString = !inString;
-      }
-      
-      escaped = inString && char === '\\' && !escaped;
-      
-      // Only count braces when not inside a string
-      if (!inString) {
-        if (char === '{') {
-          if (braceCount === 0) {
-            currentObject = '';
-          }
-          braceCount++;
-        } else if (char === '}') {
-          braceCount--;
-          
-          // If we've closed all braces, we have a complete object
-          if (braceCount === 0 && currentObject.length > 0) {
-            results.push(currentObject + '}');
-          }
-        }
-      }
-      
-      // Add character to current object if we're inside a JSON object
-      if (braceCount > 0 && (currentObject.length > 0 || char === '{')) {
-        currentObject += char;
-      }
-    }
-    
-    return results;
-  };
-  
-  const potentialJsons = extractJsonObjects(text);
-  
-  if (potentialJsons.length === 0) return [];
-  
-  const contents: MessageContent[] = [];
-  
-  for (const jsonString of potentialJsons) {
-    try {
-      // Attempt to parse as JSON
-      const data = JSON.parse(jsonString);
-      
-      // Validate the structure to ensure it's actually a flashcard
-      const isValidBasicFlashcard = 
-        data.type === 'basic' && 
-        typeof data.question === 'string' && 
-        typeof data.answer === 'string';
-        
-      const isValidMCQ = 
-        data.type === 'mcq' && 
-        typeof data.question === 'string' && 
-        Array.isArray(data.options) &&
-        typeof data.correctOptionId === 'string' &&
-        data.options.every((opt: any) => 
-          typeof opt.id === 'string' && typeof opt.text === 'string'
-        );
-        
-      const isValidTrueFalse = 
-        data.type === 'truefalse' && 
-        typeof data.question === 'string' && 
-        typeof data.isTrue === 'boolean';
-        
-      const isValidFlashcardSet = 
-        data.cards && 
-        Array.isArray(data.cards) && 
-        typeof data.title === 'string' &&
-        data.cards.length > 0 &&
-        data.cards.every((card: any) => 
-          card.type && 
-          typeof card.question === 'string' && 
-          (
-            (card.type === 'basic' && typeof card.answer === 'string') ||
-            (card.type === 'mcq' && Array.isArray(card.options) && typeof card.correctOptionId === 'string') ||
-            (card.type === 'truefalse' && typeof card.isTrue === 'boolean')
-          )
-        );
-      
-      // Check if it's a valid flashcard object
-      if (isValidBasicFlashcard || isValidMCQ || isValidTrueFalse) {
-        // Add ID if not present
-        const flashcard = {
-          ...data,
-          id: data.id || uuidv4()
-        };
-        
-        // Add to content array as a flashcard
-        contents.push({
-          type: 'flashcard',
-          flashcard
-        });
-      }
-      // Check if it's a valid flashcard set
-      else if (isValidFlashcardSet) {
-        // Add ID to set if not present
-        const flashcardSet = {
-          ...data,
-          id: data.id || uuidv4()
-        };
-        
-        // Add IDs to cards if not present
-        flashcardSet.cards = flashcardSet.cards.map((card: any) => ({
-          ...card,
-          id: card.id || uuidv4()
-        }));
-        
-        // Add to content array as a flashcard set
-        contents.push({
-          type: 'flashcard_set',
-          flashcardSet
-        });
-      }
-    } catch (e) {
-      // Skip invalid JSON
-      console.error('Error parsing flashcard JSON:', e);
-      continue;
-    }
-  }
-  
-  return contents;
 };

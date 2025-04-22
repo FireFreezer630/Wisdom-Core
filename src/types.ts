@@ -1,3 +1,5 @@
+import { imageSearchTool } from './lib/findFirstImageUrl';
+
 export interface Message {
   role: 'system' | 'user' | 'assistant' | 'function';
   content: string | MessageContent[] | null;
@@ -7,7 +9,7 @@ export interface Message {
 }
 
 export interface MessageContent {
-  type: 'text' | 'image_url' | 'flashcard' | 'flashcard_set';
+  type: 'text' | 'image_url' | 'flashcard' | 'flashcard_set' | 'search_result';
   text?: string;
   image_url?: {
     url: string;
@@ -15,6 +17,12 @@ export interface MessageContent {
   };
   flashcard?: Flashcard;
   flashcardSet?: FlashcardSet;
+  searchResult?: {
+    imageUrl: string | null;
+    title?: string;
+    caption?: string;
+    error?: string;
+  };
 }
 
 export interface ChatState {
@@ -268,5 +276,7 @@ export const functionDefinitions = [
       },
       required: ["title", "cards"]
     }
-  }
+  },
+  // Add the image search tool
+  imageSearchTool
 ];

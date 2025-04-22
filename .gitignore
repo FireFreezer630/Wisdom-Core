@@ -23,3 +23,13 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Ignore specific files starting with .roorules-
+.roorules-*
+
+# Ignore all Markdown files
+*.md
+
+# Ignore all __tests__ folders anywhere in the project
+__tests__/
+**/__tests__/
