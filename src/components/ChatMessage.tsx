@@ -7,6 +7,7 @@ import 'katex/dist/katex.min.css';
 import { useTheme } from '../lib/ThemeProvider';
 import { FlashcardRenderer } from './flashcards/FlashcardRenderer';
 import type { Message, MessageContent } from '../types';
+import { motion } from 'framer-motion'; // Import motion
 
 interface ChatMessageProps {
   role: 'system' | 'user' | 'assistant' | 'function';
@@ -19,7 +20,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ role, content }) => {
   const isUser = role === 'user';
   const isFunction = role === 'function';
   const { isDarkMode } = useTheme();
-  
+
   const getMessageContent = (content: string | MessageContent[] | null): string => {
     if (typeof content === 'string') {
       return content;
@@ -76,46 +77,51 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ role, content }) => {
     }
 
     const utterance = new SpeechSynthesisUtterance(messageContent);
-    
+
     utterance.onend = () => {
       setIsPlaying(false);
     };
-    
+
     utterance.onerror = () => {
       setIsPlaying(false);
     };
-    
+
     window.speechSynthesis.speak(utterance);
     setIsPlaying(true);
   };
 
   // Dynamic styling based on dark mode
-  const userBubbleStyles = isUser 
-    ? 'bg-app-purple text-white' 
-    : isDarkMode 
-      ? 'bg-app-card-dark text-gray-100 border border-gray-700' 
+  const userBubbleStyles = isUser
+    ? 'bg-app-purple text-white'
+    : isDarkMode
+      ? 'bg-app-card-dark text-gray-100 border border-gray-700'
       : 'bg-app-card-light text-gray-800 border-0 shadow-app';
 
   const userIconStyles = 'bg-app-purple';
   const textIconColor = 'text-white';
 
-  const actionButtonStyle = isDarkMode 
-    ? 'text-gray-400 hover:text-app-purple' 
+  const actionButtonStyle = isDarkMode
+    ? 'text-gray-400 hover:text-app-purple'
     : 'text-gray-500 hover:text-app-purple';
 
   // Adjust bubble border radius based on sender
-  const bubbleRadius = isUser 
-    ? 'rounded-2xl rounded-tr-md' 
+  const bubbleRadius = isUser
+    ? 'rounded-2xl rounded-tr-md'
     : 'rounded-2xl rounded-tl-md';
 
   return (
-    <div className={`flex gap-3 sm:gap-4 ${isUser ? 'flex-row-reverse' : ''} mb-6 items-end`}>
+    <motion.div // Use motion.div for animation
+      className={`flex gap-3 sm:gap-4 ${isUser ? 'flex-row-reverse' : ''} mb-6 items-end`}
+      initial={{ opacity: 0, y: 20 }} // Initial state: hidden and slightly below
+      animate={{ opacity: 1, y: 0 }} // Animate to visible and original position
+      transition={{ duration: 0.3, ease: "easeOut" }} // Animation duration and easing
+    >
       {isUser && (
         <div className={`flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center ${userIconStyles}`}>
           <User className={`h-4 w-4 sm:h-5 sm:w-5 ${textIconColor}`} />
         </div>
       )}
-      
+
       <div className={`flex-1 ${isUser ? 'mr-1 sm:mr-2' : 'ml-0'} max-w-[90%] sm:max-w-[92%]`}>
         <div className={`px-4 py-3 sm:px-5 sm:py-4 ${bubbleRadius} ${userBubbleStyles} transition-all ${hasFlashcards ? '' : 'overflow-x-auto'}`}>
           {/* Render content based on type */}
@@ -195,6 +201,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ role, content }) => {
           </div>
         )}
       </div>
-    </div>
+    </motion.div> // Close motion.div
   );
 };

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Plus, MessageSquare, Trash2, ChevronLeft, ChevronRight, Edit2, Check, X, Menu } from 'lucide-react';
 import { useChatStore } from '../store/chatStore';
 import { useTheme } from '../lib/ThemeProvider';
+import { motion } from 'framer-motion'; // Import motion
 
 export const Sidebar: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -40,9 +41,9 @@ export const Sidebar: React.FC = () => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        !isCollapsed && 
-        sidebarRef.current && 
-        !sidebarRef.current.contains(event.target as Node) && 
+        !isCollapsed &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node) &&
         window.innerWidth < 768
       ) {
         setIsCollapsed(true);
@@ -66,7 +67,7 @@ export const Sidebar: React.FC = () => {
     };
     addConversation(newConversation);
     // Removed setEditingId and setEditTitle to prevent immediate naming prompt
-    
+
     // Open sidebar when creating new conversation
     setIsCollapsed(false);
   };
@@ -118,7 +119,7 @@ export const Sidebar: React.FC = () => {
       </button>
 
       {/* Overlay backdrop for mobile - only visible when sidebar is open */}
-      <div 
+      <div
         className={`fixed inset-0 bg-black bg-opacity-50 z-30 transition-opacity duration-300 ease-in-out md:hidden ${
           isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
@@ -126,14 +127,15 @@ export const Sidebar: React.FC = () => {
       />
 
       {/* Sidebar */}
-      <div 
+      <motion.div // Use motion.div for animation
         ref={sidebarRef}
-        className={`fixed md:fixed top-0 left-0 h-full z-40 ${sidebarBg} 
+        className={`fixed md:fixed top-0 left-0 h-full z-40 ${sidebarBg}
           ${isDarkMode ? 'border-r border-gray-800' : 'border-r border-gray-200'}
-          shadow-lg transition-all duration-500 ease-in-out transform 
-          ${isCollapsed ? '-translate-x-full' : 'translate-x-0'} 
-          rounded-tr-2xl rounded-br-2xl overflow-hidden`}
-        style={{ width: isCollapsed ? '0' : '16rem' }}
+          shadow-lg rounded-tr-2xl rounded-br-2xl overflow-hidden`}
+        initial={{ x: '-100%' }} // Initial state: off-screen to the left
+        animate={{ x: isCollapsed ? '-100%' : '0%' }} // Animate based on isCollapsed state
+        transition={{ duration: 0.3, ease: "easeOut" }} // Animation duration and easing
+        style={{ width: '16rem' }} // Keep a fixed width and use transform for animation
       >
         {/* Content */}
         <div className="h-full flex flex-col pt-16 overflow-x-hidden px-3">
@@ -161,7 +163,7 @@ export const Sidebar: React.FC = () => {
                     ? 'text-app-purple'
                     : isDarkMode ? 'text-gray-400' : 'text-gray-500'
                 } flex-shrink-0`} />
-                
+
                 {editingId === conversation.id ? (
                   <div className="flex-1 flex items-center gap-1">
                     <input
@@ -226,7 +228,7 @@ export const Sidebar: React.FC = () => {
             ))}
           </div>
         </div>
-      </div>
+      </motion.div> {/* Close motion.div */}
     </>
   );
 };
