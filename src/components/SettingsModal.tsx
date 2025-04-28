@@ -127,15 +127,22 @@ AAAND end me ek formal language me exam ke liye definition ya points likh dena
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const { settings, updateSettings, activeConversationId, updateConversation, conversations } = useChatStore();
   const { isDarkMode, toggleDarkMode } = useTheme();
+
+  // Find the active conversation
+  const activeConversation = conversations.find(conv => conv.id === activeConversationId);
+
   const [tempPrompt, setTempPrompt] = useState(settings.defaultSystemPrompt);
   const [applyToCurrentChat, setApplyToCurrentChat] = useState(false);
 
-  // Update the tempPrompt when settings change
+  // Update the tempPrompt when settings change or active conversation changes
   useEffect(() => {
     if (isOpen) {
-      setTempPrompt(settings.defaultSystemPrompt);
+      // Determine the current system prompt: active conversation's or default
+      const activeConv = conversations.find(conv => conv.id === activeConversationId);
+      const currentPrompt = activeConv?.systemPrompt || settings.defaultSystemPrompt;
+      setTempPrompt(currentPrompt);
     }
-  }, [isOpen, settings.defaultSystemPrompt]);
+  }, [isOpen, settings.defaultSystemPrompt, activeConversationId, conversations]); // Added dependencies
 
   // Handle ESC key to close modal
   useEffect(() => {
@@ -198,7 +205,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             <label htmlFor="system-prompt" className={`block text-sm font-medium ${
               isDarkMode ? 'text-gray-300' : 'text-gray-700'
             }`}>
-              Default System Prompt
+              System Prompt ({activeConversation ? `Current Chat: "${activeConversation.title}"` : 'Default'})
             </label>
             <button
               onClick={handleResetPrompt}
@@ -210,7 +217,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               title="Reset to default prompt"
             >
               <RotateCcw className="h-4 w-4" />
-              Reset
+              Reset to Default
             </button>
           </div>
           <textarea
@@ -222,7 +229,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 ? 'bg-gray-800/50 border-gray-700 text-white placeholder-gray-400'
                 : 'bg-white border-gray-200 text-gray-900 placeholder-gray-500'
             } transition-colors`}
-            placeholder="Enter the default system prompt..."
+            placeholder="Edit the system prompt..."
           />
           <div className="mt-3">
             <label className="flex items-center gap-2 cursor-pointer">

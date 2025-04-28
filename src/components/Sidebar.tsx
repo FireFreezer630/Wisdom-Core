@@ -58,15 +58,14 @@ export const Sidebar: React.FC = () => {
   const handleNewConversation = () => {
     const newConversation = {
       id: crypto.randomUUID(),
-      title: `New Chat`,
+      title: `New Chat ${new Date().toLocaleString()}`, // Use a default title with timestamp
       systemPrompt: settings.defaultSystemPrompt,
       messages: [],
       createdAt: new Date(),
       updatedAt: new Date(),
     };
     addConversation(newConversation);
-    setEditingId(newConversation.id);
-    setEditTitle('New Chat');
+    // Removed setEditingId and setEditTitle to prevent immediate naming prompt
     
     // Open sidebar when creating new conversation
     setIsCollapsed(false);

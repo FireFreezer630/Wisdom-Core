@@ -118,27 +118,47 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ role, content }) => {
       
       <div className={`flex-1 ${isUser ? 'mr-1 sm:mr-2' : 'ml-0'} max-w-[90%] sm:max-w-[92%]`}>
         <div className={`px-4 py-3 sm:px-5 sm:py-4 ${bubbleRadius} ${userBubbleStyles} transition-all ${hasFlashcards ? '' : 'overflow-x-auto'}`}>
-          {/* Render text content */}
-          {messageContent && (
-            <ReactMarkdown 
+          {/* Render content based on type */}
+          {typeof content === 'string' ? (
+            // Render simple string content (for older messages or system prompts)
+            <ReactMarkdown
               className={`prose max-w-none text-sm sm:text-base ${isDarkMode ? 'prose-invert' : ''} math-renderer`}
               remarkPlugins={[remarkMath]}
               rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: false, output: 'html' }]]}
             >
-              {messageContent}
+              {content}
             </ReactMarkdown>
-          )}
-          
-          {/* Render flashcards if present */}
-          {typeof content !== 'string' && content && (
-            <div className="mt-4 space-y-4">
-              {content
-                .filter(item => item.type === 'flashcard' || item.type === 'flashcard_set')
-                .map((item, index) => (
-                  <FlashcardRenderer key={index} content={item} />
-                ))
+          ) : (
+            // Render array content (for multimodal messages)
+            content && content.map((item, index) => {
+              if (item.type === 'text' && item.text) {
+                return (
+                  <ReactMarkdown
+                    key={index} // Use index as key for items in array
+                    className={`prose max-w-none text-sm sm:text-base ${isDarkMode ? 'prose-invert' : ''} math-renderer`}
+                    remarkPlugins={[remarkMath]}
+                    rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: false, output: 'html' }]]}
+                  >
+                    {item.text}
+                  </ReactMarkdown>
+                );
+              } else if (item.type === 'image_url' && item.image_url?.url) {
+                return (
+                  <div key={index} className="my-2"> {/* Add some spacing around images */}
+                    <img
+                      src={item.image_url.url}
+                      alt="Uploaded image" // Add alt text for accessibility
+                      className="max-w-full h-auto rounded-lg shadow-md" // Basic styling
+                      style={{ maxHeight: '300px' }} // Limit image height
+                    />
+                  </div>
+                );
+              } else if (item.type === 'flashcard' || item.type === 'flashcard_set') {
+                 return <FlashcardRenderer key={index} content={item} />;
               }
-            </div>
+              // Handle other potential content types or null items if necessary
+              return null;
+            })
           )}
         </div>
         {!isUser && (

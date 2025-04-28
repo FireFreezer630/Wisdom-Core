@@ -23,22 +23,54 @@ const client = new OpenAI({
 // Helper function to convert our Message type to OpenAI's ChatCompletionMessageParam
 function convertToOpenAIMessages(messages: Message[]) {
   return messages.map(message => {
-    // Handle function messages
-    if (message.role === 'function') {
-      return {
-        role: 'function' as const,
-        content: typeof message.content === 'string' ? message.content : '',
-        name: message.name || '',
-      };
+    // OpenAI API expects content as a string or an array of content parts (for multimodal)
+    let openAIContent: string | Array<OpenAI.ChatCompletionContentPart> | null = null;
+
+    if (typeof message.content === 'string') {
+      openAIContent = message.content;
+    } else if (Array.isArray(message.content)) {
+      // If content is an array (e.g., for multimodal input), pass it directly
+      openAIContent = message.content as Array<OpenAI.ChatCompletionContentPart>;
+    } else if (message.content === null) {
+      openAIContent = ''; // Handle null content
+    } else {
+       // Fallback for unexpected content types, stringify as before
+       console.warn('Unexpected message content type:', typeof message.content, message.content);
+       openAIContent = JSON.stringify(message.content);
     }
-    
-    // Handle regular messages
+
+    // Return the correct message object structure based on role
+    if (message.role === 'system') {
+      // System content must be string or text parts, not null
+      const systemContent = openAIContent === null ? '' : openAIContent;
+      return {
+        role: 'system' as const, // Explicitly cast to literal type
+        content: systemContent as string | Array<OpenAI.Chat.Completions.ChatCompletionContentPartText>, // System content must be string or text parts
+      };
+    } else if (message.role === 'user') {
+       return {
+         role: 'user' as const, // Explicitly cast to literal type
+         content: openAIContent as string | Array<OpenAI.ChatCompletionContentPart>, // User content can be string or array
+       };
+    } else if (message.role === 'assistant') {
+       return {
+         role: 'assistant' as const, // Explicitly cast to literal type
+         content: openAIContent as string | null, // Assistant content is typically string or null
+         function_call: message.function_call, // Include function_call for assistant messages
+       };
+    } else if (message.role === 'function') {
+       return {
+         role: 'function' as const, // Explicitly cast to literal type
+         content: openAIContent as string | null, // Function content is typically string or null
+         name: message.name || '', // Function messages require a name
+       };
+    }
+
+    // Fallback for unknown roles (shouldn't happen with defined types)
+    console.warn('Unknown message role:', message.role);
     return {
-      role: message.role as 'system' | 'user' | 'assistant',
-      content: typeof message.content === 'string' 
-        ? message.content 
-        : message.content === null ? '' : JSON.stringify(message.content),
-      function_call: message.function_call,
+      role: 'user' as const, // Default to user role for safety, explicitly cast
+      content: 'Error: Unknown message role',
     };
   });
 }
@@ -57,7 +89,7 @@ export const streamCompletion = async (
       messages: openAIMessages,
       model,
       stream: true,
-      max_tokens: 2048, // Increased token limit for larger flashcard sets
+      max_tokens: 8000, // Increased token limit for larger flashcard sets
       temperature: 0.7,
       stream_options: { include_usage: true },
       functions: functionDefinitions,
@@ -257,7 +289,8 @@ function isCompleteJson(jsonString: string): boolean {
   }
 }
 
-export const getImageDataUrl = async (file: File): Promise<string> => {
+// Helper function to get Data URL (original functionality)
+const getImageDataUrl = async (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result as string);
@@ -265,6 +298,60 @@ export const getImageDataUrl = async (file: File): Promise<string> => {
     reader.readAsDataURL(file);
   });
 };
+
+// Helper function to resize image if needed and return data URL
+const resizeImageIfNeeded = async (file: File): Promise<string> => {
+  const MAX_DIMENSION = 2000; // Max long side dimension from OpenAI docs
+  const TARGET_QUALITY = 0.7; // JPEG quality for resizing
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const width = img.width;
+        const height = img.height;
+
+        if (Math.max(width, height) <= MAX_DIMENSION) {
+          // No resize needed, return original data URL
+          resolve(event.target?.result as string);
+          return;
+        }
+
+        // Calculate new dimensions
+        let newWidth, newHeight;
+        if (width > height) {
+          newWidth = MAX_DIMENSION;
+          newHeight = Math.round((height * MAX_DIMENSION) / width);
+        } else {
+          newHeight = MAX_DIMENSION;
+          newWidth = Math.round((width * MAX_DIMENSION) / height);
+        }
+
+        // Resize using canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Could not get canvas context'));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+        // Get resized data URL (use JPEG for better compression)
+        const resizedDataUrl = canvas.toDataURL('image/jpeg', TARGET_QUALITY);
+        console.log(`Image resized from ${width}x${height} to ${newWidth}x${newHeight}`);
+        resolve(resizedDataUrl);
+      };
+      img.onerror = reject;
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
 
 export const createMessageContent = async (text: string, imageFile?: File): Promise<MessageContent[]> => {
   const content: MessageContent[] = [];
@@ -274,15 +361,72 @@ export const createMessageContent = async (text: string, imageFile?: File): Prom
   }
   
   if (imageFile) {
-    const imageUrl = await getImageDataUrl(imageFile);
-    content.push({
-      type: 'image_url',
-      image_url: {
-        url: imageUrl,
-        details: 'auto'
+    // Define the maximum file size based on OpenAI documentation (20MB)
+    const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
+
+    if (imageFile.size > MAX_FILE_SIZE_BYTES) {
+      console.warn('Image file size exceeds 20MB limit. Attempting upload to temporary service.');
+      
+      const uploadUrl = 'https://tmpfiles.org/api/v1/upload';
+      const formData = new FormData();
+      formData.append('file', imageFile);
+
+      try {
+        const response = await fetch(uploadUrl, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Upload failed: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        // Assuming the API returns a JSON with a 'data.url' field for the uploaded image
+        const imageUrl = result?.data?.url;
+
+        if (imageUrl) {
+          content.push({
+          type: 'image_url',
+          image_url: {
+            url: imageUrl,
+            details: 'low' // Corrected property name from detail to details
+          }
+        });
+           // Optionally, add a user-facing message about the successful upload
+          content.push({ type: 'text', text: `(Note: Image "${imageFile.name}" uploaded successfully.)` });
+        } else {
+           throw new Error('Upload successful but no URL found in response.');
+        }
+
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        // Add a user-facing message about the upload failure
+        content.push({ type: 'text', text: `(Error uploading image "${imageFile.name}": ${error instanceof Error ? error.message : String(error)})` });
+        // Do not add the image if upload fails
       }
-    });
+
+    } else {
+      // Use data URL for smaller images, resizing if dimensions are too large
+      try {
+        const imageUrl = await resizeImageIfNeeded(imageFile);
+        content.push({
+        type: 'image_url',
+        image_url: {
+          url: imageUrl,
+          details: 'low' // Corrected property name from detail to details
+        }
+      });
+      } catch (error) {
+         console.error('Error processing image for data URL:', error);
+         content.push({ type: 'text', text: `(Error processing image "${imageFile.name}": ${error instanceof Error ? error.message : String(error)})` });
+      }
+    }
   }
   
   return content;
 };
+
+// Note: Using tmpfiles.org for frontend uploads means no API key is directly exposed,
+// but reliance on a third-party service for temporary storage is introduced.
+// For persistent storage or more control, a backend upload is recommended.

@@ -37,16 +37,27 @@ function App() {
   const handleSendMessage = async (text: string, imageFile?: File) => {
     if (!activeConversationId || !activeConversation) return;
 
+    // Await message content creation to ensure file processing is complete
     const messageContent = await createMessageContent(text, imageFile);
+
+    // Only proceed if messageContent is not empty (e.g., if image upload failed)
+    if (!messageContent || (Array.isArray(messageContent) && messageContent.length === 0)) {
+        setIsLoading(false);
+        setError('Failed to create message content. Please try again.');
+        console.error('createMessageContent returned empty content.');
+        return;
+    }
+
     const userMessage: Message = {
       role: 'user',
-      content: messageContent
+      content: messageContent // messageContent is now guaranteed to be serializable
     };
-    
+
     console.log('Sending user message');
+    // Update state with the fully processed user message
     const updatedMessages = [...activeConversation.messages, userMessage];
     updateConversation(activeConversationId, { messages: updatedMessages });
-    
+
     setIsLoading(true);
     setError(null);
 
@@ -54,24 +65,26 @@ function App() {
       let assistantMessage = '';
       let assistantContent: MessageContent[] = [];
       let flashcardProcessed = false; // Flag to track if we've added a flashcard
-      
+
+      // Add a placeholder for the assistant's response immediately
       const newMessage: Message = {
         role: 'assistant',
         content: ''
       };
-      
+
+      // Update state with the placeholder assistant message
       updateConversation(activeConversationId, {
         messages: [...updatedMessages, newMessage]
       });
 
       // Get the conversation-specific system prompt or fall back to default
       const systemPrompt = activeConversation.systemPrompt || settings.defaultSystemPrompt;
-      
-      // Create the messages array with the system message first
+
+      // Create the messages array with the system message first for the API call
       const messagesWithSystem: Message[] = [
         { role: 'system', content: systemPrompt },
         ...activeConversation.messages,
-        userMessage
+        userMessage // Use the fully processed user message here
       ];
 
       console.log('Starting streamCompletion with messages:', messagesWithSystem.length);

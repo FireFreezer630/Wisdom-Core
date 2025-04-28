@@ -10,6 +10,7 @@ interface ChatInputProps {
 export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
   const [input, setInput] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null); // New state for image preview
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { isDarkMode } = useTheme();
 
@@ -26,11 +27,18 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
+      // Create a preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const clearImageFile = () => {
     setImageFile(null);
+    setImagePreviewUrl(null); // Clear preview URL
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -67,21 +75,31 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
           </button>
           
           <div className="flex-1 relative">
+            {/* Image Preview and File Name */}
             {imageFile && (
-              <div className={`absolute -top-10 left-0 right-0 py-2 px-3 text-xs rounded-xl flex justify-between items-center ${
+              <div className={`absolute -top-28 left-0 right-0 py-2 px-3 text-xs rounded-xl flex flex-col gap-2 ${
                 isDarkMode ? 'bg-app-card-dark text-gray-300' : 'bg-white text-gray-700 shadow-app'
               }`}>
-                <span className="truncate max-w-[90%]">📎 {imageFile.name}</span>
-                <button 
-                  type="button" 
-                  onClick={clearImageFile}
-                  className={`text-gray-500 hover:text-red-500 p-1 rounded-full ${
-                    isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
-                  }`}
-                  aria-label="Remove image"
-                >
-                  <X className="h-3 w-3" />
-                </button>
+                {imagePreviewUrl && (
+                  <img
+                    src={imagePreviewUrl}
+                    alt="Image preview"
+                    className="max-h-24 w-auto rounded-md object-contain self-center" // Small preview styling
+                  />
+                )}
+                <div className="flex justify-between items-center">
+                  <span className="truncate max-w-[90%]">📎 {imageFile.name}</span>
+                  <button
+                    type="button"
+                    onClick={clearImageFile}
+                    className={`text-gray-500 hover:text-red-500 p-1 rounded-full ${
+                      isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+                    }`}
+                    aria-label="Remove image"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
               </div>
             )}
             <input
