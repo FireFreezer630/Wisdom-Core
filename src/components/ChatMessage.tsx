@@ -123,7 +123,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ role, content }) => {
       )}
 
       <div className={`flex-1 ${isUser ? 'mr-1 sm:mr-2' : 'ml-0'} max-w-[90%] sm:max-w-[92%]`}>
-        <div className={`px-4 py-3 sm:px-5 sm:py-4 ${bubbleRadius} ${userBubbleStyles} transition-all ${hasFlashcards ? '' : 'overflow-x-auto'}`}>
+        <div className={`px-5 py-4 ${bubbleRadius} ${userBubbleStyles} transition-all ${hasFlashcards ? '' : 'overflow-x-auto'}`}>
           {/* Render content based on type */}
           {typeof content === 'string' ? (
             // Render simple string content (for older messages or system prompts)

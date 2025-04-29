@@ -29,8 +29,14 @@ function convertToOpenAIMessages(messages: Message[]) {
     if (typeof message.content === 'string') {
       openAIContent = message.content;
     } else if (Array.isArray(message.content)) {
-      // If content is an array (e.g., for multimodal input), pass it directly
-      openAIContent = message.content as Array<OpenAI.ChatCompletionContentPart>;
+      // Filter out unsupported content types before passing to OpenAI
+      const filteredContent = message.content.filter(item =>
+        item.type === 'text' || (item.type === 'image_url' && item.image_url?.url)
+        // Add other supported OpenAI content types here if needed in the future
+      );
+      // Cast the filtered array to the expected OpenAI type.
+      // If filteredContent is empty, this will be an empty array, which is acceptable for OpenAI.
+      openAIContent = filteredContent as Array<OpenAI.ChatCompletionContentPart>;
     } else if (message.content === null) {
       openAIContent = ''; // Handle null content
     } else {
@@ -76,10 +82,11 @@ function convertToOpenAIMessages(messages: Message[]) {
 }
 
 export const streamCompletion = async (
-  messages: Message[], 
+  messages: Message[],
   onChunk: (content: string) => void,
   onUsage?: (usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number }) => void,
-  onFlashcardContent?: (flashcardContent: MessageContent) => void
+  onFlashcardContent?: (flashcardContent: MessageContent) => void,
+  signal?: AbortSignal // Add AbortSignal parameter
 ) => {
   try {
     console.log('Starting completion stream with functions enabled');
@@ -93,8 +100,9 @@ export const streamCompletion = async (
       temperature: 0.7,
       stream_options: { include_usage: true },
       functions: functionDefinitions,
-      function_call: 'auto'
-    });
+      function_call: 'auto',
+      // Removed signal from here
+    }, { signal: signal }); // Added options object here
 
     let usage = null;
     let accumulatedText = '';

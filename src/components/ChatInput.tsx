@@ -1,13 +1,15 @@
 import React, { useState, useRef } from 'react';
-import { Send, Image, X } from 'lucide-react';
+import { Send, Image, X, Square } from 'lucide-react'; // Import Square
 import { useTheme } from '../lib/ThemeProvider';
 
 interface ChatInputProps {
   onSend: (message: string, imageFile?: File) => void;
   disabled: boolean;
+  isLoading: boolean; // Add isLoading prop
+  onStop: () => void; // Add onStop prop
 }
 
-export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
+export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled, isLoading, onStop }) => { // Destructure isLoading and onStop
   const [input, setInput] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null); // New state for image preview
@@ -64,35 +66,36 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             className={`p-3 rounded-xl ${
-              isDarkMode 
-                ? 'bg-app-card-dark text-gray-400 hover:text-app-purple' 
+              isDarkMode
+                ? 'bg-app-card-dark text-gray-400 hover:text-app-purple'
                 : 'bg-white text-gray-500 hover:text-app-purple shadow-app'
-            } transition-all duration-200`}
+            } transition-all duration-200 self-end flex-grow-0 flex-shrink-0`}
             disabled={disabled}
             aria-label="Upload image"
           >
             <Image className="h-5 w-5" />
           </button>
           
-          <div className="flex-1 relative">
+          {/* Container for image preview and input */}
+          <div className="flex-1 flex flex-col min-w-0"> {/* Added flex and flex-col */}
             {/* Image Preview and File Name */}
             {imageFile && (
-              <div className={`absolute -top-28 left-0 right-0 py-2 px-3 text-xs rounded-xl flex flex-col gap-2 ${
+              <div className={`mb-2 w-full py-2 px-3 text-xs rounded-xl flex flex-col gap-2 ${
                 isDarkMode ? 'bg-app-card-dark text-gray-300' : 'bg-white text-gray-700 shadow-app'
               }`}>
                 {imagePreviewUrl && (
                   <img
                     src={imagePreviewUrl}
                     alt="Image preview"
-                    className="max-h-24 w-auto rounded-md object-contain self-center" // Small preview styling
+                    className="max-h-16 w-auto rounded-md object-contain self-start max-w-full"
                   />
                 )}
                 <div className="flex justify-between items-center">
-                  <span className="truncate max-w-[90%]">📎 {imageFile.name}</span>
+                  <span className="truncate max-w-[90%] flex-grow-0 flex-shrink">📎 {imageFile.name}</span>
                   <button
                     type="button"
                     onClick={clearImageFile}
-                    className={`text-gray-500 hover:text-red-500 p-1 rounded-full ${
+                    className={`flex-shrink-0 text-gray-500 hover:text-red-500 p-1 rounded-full ${
                       isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
                     }`}
                     aria-label="Remove image"
@@ -109,22 +112,33 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
               placeholder="Ask anything..."
               disabled={disabled}
               className={`w-full px-4 py-3 sm:px-5 sm:py-3 rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-app-purple/50 focus:border-transparent ${
-                isDarkMode 
-                  ? 'bg-app-card-dark text-white placeholder-gray-400' 
+                isDarkMode
+                  ? 'bg-app-card-dark text-white placeholder-gray-400'
                   : 'bg-white text-gray-900 placeholder-gray-500 shadow-app'
               } transition-colors`}
               aria-label="Message input"
             />
           </div>
           
-          <button
-            type="submit"
-            disabled={disabled || (!input.trim() && !imageFile)}
-            className="p-3 sm:px-5 sm:py-3 bg-app-purple text-white rounded-xl hover:bg-app-purple-dark disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-app"
-            aria-label="Send message"
-          >
-            <Send className="h-5 w-5" />
-          </button>
+          {isLoading ? (
+            <button
+              type="button" // Use type="button" to prevent form submission
+              onClick={onStop}
+              className="p-3 sm:px-5 sm:py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all duration-200 shadow-app self-end flex-grow-0 flex-shrink-0"
+              aria-label="Stop generating"
+            >
+              <Square className="h-5 w-5" />
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={disabled || (!input.trim() && !imageFile)}
+              className="p-3 sm:px-5 sm:py-3 bg-app-purple text-white rounded-xl hover:bg-app-purple-dark disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-app self-end flex-grow-0 flex-shrink-0"
+              aria-label="Send message"
+            >
+              <Send className="h-5 w-5" />
+            </button>
+          )}
         </form>
       </div>
     </div>
