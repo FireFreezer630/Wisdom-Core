@@ -277,6 +277,19 @@ export const functionDefinitions = [
       required: ["title", "cards"]
     }
   },
+  {
+    name: "tavily_search",
+    description: "Perform a web search using Tavily API and return a summarized answer.",
+    parameters: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Search query." },
+        topic: { type: "string", description: "Search topic: general or news.", enum: ["general", "news"] },
+        max_results: { type: "integer", description: "Maximum number of results to return." }
+      },
+      required: ["query"]
+    }
+  },
   // Add the image search tool
   imageSearchTool
 ];

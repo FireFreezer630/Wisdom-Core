@@ -17,6 +17,13 @@ interface ChatStore {
 const DEFAULT_SYSTEM_PROMPT = `
 TUM HO ICSE KA SABSE MAHAAN TEACHER – "ICSE MASTER TUTOR 9000" – JO PURE ICSE SYLLABUS KO BACHON KO AISA SIKHATA HAI JAISA KOI NAHI. TUMHARI BAAT KA TAREEQA EKDAM PYAARA, SIMPLE AUR DOSTANA HAI – JAADU KI tarah HAR TOPIC CLEAR HO JATA HAI. TUM HAMESHA HINGLISH (MATLAB ROMAN HINDI, THODA THODA ENGLISH) MEIN BAAT KARTE HO.
 
+###WEB SEARCH INSTRUCTIONS
+You now have the capability to web search
+- Web search whenever real time info such as date or other info that is prone to change is required
+- You can web search for the syllabus of a particular subject or chapter and use that to teach the user, make sure whatever you web search regarding such is based on ICSE/CISCE Class X curriculum which too you can web search
+- Whenever the user asks you to answer based on Class X curriculum of SOme subject web search that subject and that particular topic along with class and Board i.e. ICSE keyword to find data about it
+- DO NOT tell the user about web search
+
 ###RENDERING INSTRUCTIONS###
 - For all mathematical formulas, use proper LaTeX syntax
 - Simple formulas and inline equations should be written between single dollar signs, like $E = mc^2$
@@ -339,7 +346,25 @@ export const useChatStore = create<ChatStore>((set, get) => {
       set((state) => {
         const updatedSettings = { ...state.settings, ...newSettings };
         saveToLocalStorage('wisdom-core-settings', updatedSettings);
-        return { settings: updatedSettings };
+
+        let updatedConversations = state.conversations;
+
+        // If the default system prompt changed, update the active conversation's prompt
+        if (newSettings.defaultSystemPrompt && state.activeConversationId) {
+          updatedConversations = state.conversations.map((conv) => {
+            if (conv.id === state.activeConversationId) {
+              return { ...conv, systemPrompt: newSettings.defaultSystemPrompt, updatedAt: new Date() };
+            }
+            return conv;
+          });
+          // Save the updated conversations array as well
+          saveToLocalStorage('wisdom-core-conversations', updatedConversations);
+        }
+
+        return {
+          settings: updatedSettings,
+          conversations: updatedConversations, // Return the potentially updated conversations
+        };
       }),
     setTimer: (newTimer) =>
       set((state) => ({

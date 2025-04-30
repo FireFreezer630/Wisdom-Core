@@ -119,6 +119,56 @@ export const streamCompletion = async (
       }
 
       try {
+        // Handle Tavily web search function
+        if (accumulatedFunctionCall.name === 'tavily_search') {
+          const args = JSON.parse(accumulatedFunctionCall.arguments);
+          const tavilyKey = import.meta.env.VITE_TAVILY_API_KEY;
+          if (!tavilyKey) {
+            accumulatedText += "\n\nError: Missing Tavily API key.";
+            onChunk("\n\nError: Missing Tavily API key.");
+            functionCallProcessed = true;
+            return true;
+          }
+          const requestBody = {
+            query: args.query,
+            topic: args.topic || 'general',
+            search_depth: 'basic',
+            chunks_per_source: 3,
+            max_results: args.max_results || 3,
+            time_range: null,
+            days: 7,
+            include_answer: true,
+            include_raw_content: false,
+            include_images: false,
+            include_image_descriptions: false,
+            include_domains: [],
+            exclude_domains: [],
+          };
+          try {
+            const response = await fetch('https://api.tavily.com/search', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${tavilyKey}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(requestBody),
+            });
+            const data = await response.json();
+            functionCallProcessed = true;
+            if (data.answer) {
+              accumulatedText += `\n\n${data.answer}`;
+              onChunk(`\n\n${data.answer}`);
+            } else {
+              accumulatedText += "\n\nNo results found.";
+              onChunk("\n\nNo results found.");
+            }
+          } catch (err) {
+            accumulatedText += `\n\nError calling Tavily: ${err}`;
+            onChunk(`\n\nError calling Tavily: ${err}`);
+            functionCallProcessed = true;
+          }
+          return true;
+        }
         // Handle image search function
         if (accumulatedFunctionCall.name === 'findFirstImageUrl') {
           const args = JSON.parse(accumulatedFunctionCall.arguments);
