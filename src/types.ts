@@ -1,10 +1,10 @@
 import { imageSearchTool } from './lib/findFirstImageUrl';
 
 export interface Message {
-  role: 'system' | 'user' | 'assistant' | 'function';
+  role: 'system' | 'user' | 'assistant' | 'function' | 'tool'; // Added 'tool' role
   content: string | MessageContent[] | null;
   name?: string;
-  function_call?: FunctionCall;
+  function_call?: FunctionCall; // Keep for compatibility if needed, though new API uses tool_calls
   tool_call_id?: string;
 }
 

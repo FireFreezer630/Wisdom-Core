@@ -10,7 +10,7 @@ import type { Message, MessageContent } from '../types';
 import { motion } from 'framer-motion'; // Import motion
 
 interface ChatMessageProps {
-  role: 'system' | 'user' | 'assistant' | 'function';
+  role: 'system' | 'user' | 'assistant' | 'function' | 'tool'; // Added 'tool' role
   content: string | MessageContent[] | null;
 }
 

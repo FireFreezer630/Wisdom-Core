@@ -15,7 +15,7 @@ function App() {
   const [isTimerOpen, setIsTimerOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [usage, setUsage] = useState<ChatState['usage']>();
+  // Removed usage state as the new endpoint doesn't support it
   const { isDarkMode, toggleDarkMode } = useTheme();
 
   const abortControllerRef = useRef<AbortController | null>(null); // Ref for AbortController
@@ -147,10 +147,8 @@ function App() {
             });
           }
         },
-        (newUsage) => {
-          setUsage(newUsage);
-        },
-        (flashcardContent) => {
+        // Removed onUsage callback
+        (flashcardContent: MessageContent) => { // Added type annotation
           if (flashcardProcessed) {
             console.log("Ignoring duplicate flashcard content");
             return;
@@ -329,15 +327,7 @@ function App() {
               </div>
             )}
 
-            {usage && (
-              <div className={`max-w-4xl mx-auto text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mt-4 text-center`}>
-                <span className="px-3 py-1 rounded-full bg-app-bg dark:bg-gray-800 inline-block">
-                  Tokens used: {usage.total_tokens}
-                  (Prompt: {usage.prompt_tokens},
-                  Completion: {usage.completion_tokens})
-                </span>
-              </div>
-            )}
+            {/* Removed usage display */}
           </div>
 
           {/* Fixed chat input at the bottom - full width */}

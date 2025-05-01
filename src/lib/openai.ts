@@ -1,310 +1,293 @@
-import OpenAI from 'openai';
 import type { Message, MessageContent, FunctionCall } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import type { Flashcard, BasicFlashcard, MCQFlashcard, TrueFalseFlashcard, FlashcardSet } from '../types';
-import { functionDefinitions } from '../types';
-import { processFunctionCall } from './flashcardHandler';
-import { findFirstImageUrl } from './findFirstImageUrl';
+import { functionDefinitions } from '../types'; // Assuming functionDefinitions is defined here or imported
+import { processFunctionCall } from './flashcardHandler'; // Assuming processFunctionCall is imported
+import { findFirstImageUrl } from './findFirstImageUrl'; // Assuming findFirstImageUrl is imported
 
-const baseURL = import.meta.env.VITE_OPENAI_API_ENDPOINT;
-const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-const model = import.meta.env.VITE_OPENAI_MODEL;
+// Model can still be read from environment or defaulted
+const model = import.meta.env.VITE_OPENAI_MODEL || 'openai'; // Default to 'openai' if not set
 
-if (!baseURL || !apiKey || !model) {
-  throw new Error('Missing required environment variables. Please check your .env file.');
-}
-
-const client = new OpenAI({
-  baseURL,
-  apiKey,
-  dangerouslyAllowBrowser: true
-});
-
-// Helper function to convert our Message type to OpenAI's ChatCompletionMessageParam
-function convertToOpenAIMessages(messages: Message[]) {
+// Helper function to format messages for the new endpoint (assuming standard OpenAI format)
+// This is simplified as the OpenAI SDK specific types are removed.
+function formatMessagesForPayload(messages: Message[]) {
   return messages.map(message => {
-    // OpenAI API expects content as a string or an array of content parts (for multimodal)
-    let openAIContent: string | Array<OpenAI.ChatCompletionContentPart> | null = null;
-
+    // Basic validation/conversion, might need more robust handling
+    let content: string | Array<object> | null = null;
     if (typeof message.content === 'string') {
-      openAIContent = message.content;
+      content = message.content;
     } else if (Array.isArray(message.content)) {
-      // Filter out unsupported content types before passing to OpenAI
-      const filteredContent = message.content.filter(item =>
-        item.type === 'text' || (item.type === 'image_url' && item.image_url?.url)
-        // Add other supported OpenAI content types here if needed in the future
-      );
-      // Cast the filtered array to the expected OpenAI type.
-      // If filteredContent is empty, this will be an empty array, which is acceptable for OpenAI.
-      openAIContent = filteredContent as Array<OpenAI.ChatCompletionContentPart>;
-    } else if (message.content === null) {
-      openAIContent = ''; // Handle null content
+       // Filter for text/image_url, similar to previous logic but without OpenAI types
+       content = message.content
+         .filter(item => item.type === 'text' || (item.type === 'image_url' && item.image_url?.url))
+         .map(item => {
+             if (item.type === 'text') return { type: 'text', text: item.text };
+             // Add explicit check for item.image_url existence after type guard
+             if (item.type === 'image_url' && item.image_url) {
+                 return { type: 'image_url', image_url: { url: item.image_url.url } };
+             }
+             return null; // Should not happen with filter, but good practice
+         }).filter(item => item !== null);
+    } else if (message.content === null && message.role !== 'assistant') {
+        // Allow null content only for assistant message potentially ending in function call
+        content = '';
     } else {
-       // Fallback for unexpected content types, stringify as before
-       console.warn('Unexpected message content type:', typeof message.content, message.content);
-       openAIContent = JSON.stringify(message.content);
+        content = message.content; // Keep null for assistant if applicable
     }
 
-    // Return the correct message object structure based on role
-    if (message.role === 'system') {
-      // System content must be string or text parts, not null
-      const systemContent = openAIContent === null ? '' : openAIContent;
-      return {
-        role: 'system' as const, // Explicitly cast to literal type
-        content: systemContent as string | Array<OpenAI.Chat.Completions.ChatCompletionContentPartText>, // System content must be string or text parts
-      };
-    } else if (message.role === 'user') {
-       return {
-         role: 'user' as const, // Explicitly cast to literal type
-         content: openAIContent as string | Array<OpenAI.ChatCompletionContentPart>, // User content can be string or array
-       };
-    } else if (message.role === 'assistant') {
-       return {
-         role: 'assistant' as const, // Explicitly cast to literal type
-         content: openAIContent as string | null, // Assistant content is typically string or null
-         function_call: message.function_call, // Include function_call for assistant messages
-       };
-    } else if (message.role === 'function') {
-       return {
-         role: 'function' as const, // Explicitly cast to literal type
-         content: openAIContent as string | null, // Function content is typically string or null
-         name: message.name || '', // Function messages require a name
-       };
+
+    const baseMessage: any = { role: message.role, content };
+
+    // The new API uses 'tool_calls' in the assistant message, not 'function_call'
+    // We should not include 'function_call' in the messages we send to the API
+    // if (message.role === 'assistant' && message.function_call) {
+    //   baseMessage.function_call = message.function_call;
+    // }
+
+    // The new API uses 'tool_call_id' and 'name' for role 'tool', not just 'name' for role 'function'
+    if (message.role === 'tool' && message.tool_call_id && message.name) {
+        baseMessage.tool_call_id = message.tool_call_id;
+        baseMessage.name = message.name;
+    } else if (message.role === 'function' && message.name) {
+        // If we still have old 'function' role messages, convert them to 'tool' role for the new API
+        console.warn("Converting old 'function' role message to 'tool' role for new API.");
+        baseMessage.role = 'tool';
+        // We don't have a tool_call_id for old function messages, this might be an issue.
+        // For now, let's omit tool_call_id for converted messages, the API might handle it.
+        baseMessage.name = message.name;
     }
 
-    // Fallback for unknown roles (shouldn't happen with defined types)
-    console.warn('Unknown message role:', message.role);
-    return {
-      role: 'user' as const, // Default to user role for safety, explicitly cast
-      content: 'Error: Unknown message role',
-    };
-  });
+
+    return baseMessage;
+  }).filter(msg => msg.content !== null || msg.role === 'assistant' || msg.role === 'tool'); // Filter out messages with null content unless it's assistant or tool
 }
+
 
 export const streamCompletion = async (
   messages: Message[],
   onChunk: (content: string) => void,
-  onUsage?: (usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number }) => void,
+  // onUsage is removed as the new endpoint likely doesn't provide it
   onFlashcardContent?: (flashcardContent: MessageContent) => void,
-  signal?: AbortSignal // Add AbortSignal parameter
+  signal?: AbortSignal
 ) => {
+  const url = "https://text.pollinations.ai/openai"; // New endpoint
+  const formattedMessages = formatMessagesForPayload(messages);
+
+  const payload = {
+    model: model, // Use the model variable
+    messages: formattedMessages,
+    // Note: stream is false for the initial request to check for tool_calls
+    stream: false,
+    // Format tools correctly for the API: wrap each function definition
+    tools: functionDefinitions.map(funcDef => ({
+      type: 'function',
+      function: funcDef,
+    })),
+    tool_choice: 'auto', // Use tool_choice instead of function_call for the new API spec
+  };
+
+  let conversationHistory = [...formattedMessages]; // Keep track of messages for the second call
+
+  const MAX_RETRIES = 3; // Maximum number of retries
+  const BASE_DELAY_MS = 1000; // Initial delay in milliseconds (1 second)
+
+  async function fetchWithRetry(url: string, options: RequestInit, retries = 0): Promise<Response> {
+    try {
+      // Check for abort signal before each fetch attempt
+      if (signal?.aborted) {
+        console.log("Fetch aborted by signal during retry.");
+        throw new Error("Fetch aborted by user"); // Throw an error to break the retry loop
+      }
+
+      const response = await fetch(url, options);
+
+      if (!response.ok) {
+        // Check for 429 or other retryable status codes
+        if (response.status === 429 && retries < MAX_RETRIES) {
+          const delay = BASE_DELAY_MS * Math.pow(2, retries) + Math.random() * BASE_DELAY_MS; // Exponential backoff with jitter
+          console.warn(`Received 429. Retrying in ${delay}ms. Attempt ${retries + 1}/${MAX_RETRIES}`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          return fetchWithRetry(url, options, retries + 1); // Retry
+        }
+        // For other non-OK responses or max retries reached, throw an error
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      return response; // Return successful response
+
+    } catch (error) {
+      // Re-throw abort errors immediately
+      if ((error as Error).message.includes("aborted")) {
+         throw error;
+      }
+      // For other errors, if retries are available, retry
+      if (retries < MAX_RETRIES) {
+          const delay = BASE_DELAY_MS * Math.pow(2, retries) + Math.random() * BASE_DELAY_MS; // Exponential backoff with jitter
+          console.warn(`Fetch failed. Retrying in ${delay}ms. Attempt ${retries + 1}/${MAX_RETRIES}. Error: ${error}`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          return fetchWithRetry(url, options, retries + 1); // Retry
+      }
+      // If max retries reached, throw the error
+      throw error;
+    }
+  }
+
   try {
-    console.log('Starting completion stream with functions enabled');
-    const openAIMessages = convertToOpenAIMessages(messages);
-    
-    const stream = await client.chat.completions.create({
-      messages: openAIMessages,
-      model,
-      stream: true,
-      max_tokens: 8000, // Increased token limit for larger flashcard sets
-      temperature: 0.7,
-      stream_options: { include_usage: true },
-      functions: functionDefinitions,
-      function_call: 'auto',
-      // Removed signal from here
-    }, { signal: signal }); // Added options object here
+    console.log("Sending initial request to:", url);
+    const response = await fetchWithRetry(url, { // Use fetchWithRetry
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      signal: signal // Pass the abort signal
+    });
 
-    let usage = null;
-    let accumulatedText = '';
-    let accumulatedFunctionCall: Partial<FunctionCall> = {};
-    let functionCallInProgress = false;
-    let functionCallProcessed = false;
-    
-    // Helper function to process function calls and return appropriate message
-    const processFunctionCallResult = async () => {
-      if (!accumulatedFunctionCall.name || 
-          !accumulatedFunctionCall.arguments || 
-          functionCallProcessed) {
-        return false;
-      }
+    const data = await response.json();
+    console.log("Initial response received:", data);
 
-      try {
-        // Handle Tavily web search function
-        if (accumulatedFunctionCall.name === 'tavily_search') {
-          const args = JSON.parse(accumulatedFunctionCall.arguments);
-          const tavilyKey = import.meta.env.VITE_TAVILY_API_KEY;
-          if (!tavilyKey) {
-            accumulatedText += "\n\nError: Missing Tavily API key.";
-            onChunk("\n\nError: Missing Tavily API key.");
-            functionCallProcessed = true;
-            return true;
-          }
-          const requestBody = {
-            query: args.query,
-            topic: args.topic || 'general',
-            search_depth: 'basic',
-            chunks_per_source: 3,
-            max_results: args.max_results || 3,
-            time_range: null,
-            days: 7,
-            include_answer: true,
-            include_raw_content: false,
-            include_images: false,
-            include_image_descriptions: false,
-            include_domains: [],
-            exclude_domains: [],
-          };
+    const assistantMessage = data?.choices?.[0]?.message;
+
+    if (!assistantMessage) {
+        throw new Error("Invalid response format: Missing assistant message.");
+    }
+
+    // Add the assistant's message to history
+    conversationHistory.push(assistantMessage);
+
+    // Check for tool calls
+    const toolCalls = assistantMessage.tool_calls;
+
+    if (toolCalls && Array.isArray(toolCalls) && toolCalls.length > 0) {
+      console.log("Tool calls detected:", toolCalls);
+
+      let toolMessages: Message[] = []; // Use Message type for tool messages
+
+      for (const toolCall of toolCalls) {
+        if (toolCall.type === 'function' && toolCall.function) {
+          const functionName = toolCall.function.name;
+          const functionArguments = toolCall.function.arguments;
+          const toolCallId = toolCall.id;
+
+          console.log(`Executing local function: ${functionName} with args: ${functionArguments}`);
+
+          let functionResultContent: MessageContent | string = '';
+          let functionExecutionError: string | null = null;
+
           try {
-            const response = await fetch('https://api.tavily.com/search', {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${tavilyKey}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(requestBody),
-            });
-            const data = await response.json();
-            functionCallProcessed = true;
-            if (data.answer) {
-              accumulatedText += `\n\n${data.answer}`;
-              onChunk(`\n\n${data.answer}`);
-            } else {
-              accumulatedText += "\n\nNo results found.";
-              onChunk("\n\nNo results found.");
-            }
-          } catch (err) {
-            accumulatedText += `\n\nError calling Tavily: ${err}`;
-            onChunk(`\n\nError calling Tavily: ${err}`);
-            functionCallProcessed = true;
-          }
-          return true;
-        }
-        // Handle image search function
-        if (accumulatedFunctionCall.name === 'findFirstImageUrl') {
-          const args = JSON.parse(accumulatedFunctionCall.arguments);
-          const result = await findFirstImageUrl(args);
-          
-          if (result) {
-            functionCallProcessed = true;
-            
-            if (result.error) {
-              accumulatedText += `\n\nI couldn't find an image: ${result.error}`;
-              onChunk(`\n\nI couldn't find an image: ${result.error}`);
-            } else if (result.imageUrl) {
-              if (onFlashcardContent) {
-                onFlashcardContent({
-                  type: 'search_result',
-                  searchResult: result
-                });
-              }
-              
-              accumulatedText += `\n\nI found an image${result.title ? ` titled "${result.title}"` : ''}.`;
-              onChunk(`\n\nI found an image${result.title ? ` titled "${result.title}"` : ''}.`);
-            }
-            
-            return true;
-          }
-        }
-        // Handle flashcard functions
-        else {
-          const flashcardContent = processFunctionCall(
-            accumulatedFunctionCall.name, 
-            accumulatedFunctionCall.arguments
-          );
-          
-          if (flashcardContent) {
-            console.log('Flashcard generated successfully:', flashcardContent.type);
-            functionCallProcessed = true;
-            if (onFlashcardContent) {
-              onFlashcardContent(flashcardContent);
-            }
-            
-            let responseText = '';
-            switch (accumulatedFunctionCall.name) {
-              case 'create_flashcard':
-                responseText = 'I\'ve created a flashcard for you.';
-                break;
-              case 'create_mcq':
-                responseText = 'I\'ve created a multiple-choice question for you.';
-                break;
-              case 'create_truefalse':
-                responseText = 'I\'ve created a true/false question for you.';
-                break;
-              case 'create_flashcard_set':
-                const set = (flashcardContent as { flashcardSet: FlashcardSet }).flashcardSet;
-                responseText = `I've created a set of ${set.cards.length} flashcards about "${set.title}" for you.`;
-                break;
-            }
-            
-            if (responseText && !accumulatedText.includes(responseText)) {
-              accumulatedText += '\n\n' + responseText;
-              onChunk('\n\n' + responseText);
-            }
-            
-            return true;
-          }
-        }
-      } catch (error) {
-        console.error('Error processing function call:', error);
-      }
-      
-      return false;
-    };
-    
-    for await (const part of stream) {
-      // Debug logging
-      if (part.choices[0]?.delta?.function_call) {
-        console.log('Function call delta received:', part.choices[0].delta.function_call);
-      }
-      
-      // Handle normal content
-      const content = part.choices[0]?.delta?.content || '';
-      if (content) {
-        accumulatedText += content;
-        onChunk(content);
-      }
-      
-      // Handle function calling
-      const functionCall = part.choices[0]?.delta?.function_call;
-      if (functionCall) {
-        functionCallInProgress = true;
-        
-        if (functionCall.name) {
-          accumulatedFunctionCall.name = functionCall.name;
-          console.log('Function name received:', functionCall.name);
-        }
-        
-        if (functionCall.arguments) {
-          accumulatedFunctionCall.arguments = 
-            (accumulatedFunctionCall.arguments || '') + functionCall.arguments;
-          console.log('Function arguments chunk received, length:', functionCall.arguments.length);
-        }
-      }
-      
-      // Try to process the function call under certain conditions
-      const isEndOfFunctionCall = part.choices[0]?.finish_reason === 'function_call';
-      const hasValidJson = accumulatedFunctionCall.arguments && isCompleteJson(accumulatedFunctionCall.arguments);
-      
-      if (functionCallInProgress && (isEndOfFunctionCall || hasValidJson)) {
-        const logMessage = isEndOfFunctionCall
-          ? 'Function call complete. Processing at end of stream...'
-          : 'Complete JSON detected in stream. Processing function call early...';
-        
-        console.log(logMessage);
-        
-        await processFunctionCallResult();
-      }
-      
-      if (part.usage) {
-        usage = part.usage;
-      }
-    }
-    
-    console.log('Stream completed. Final function call state:', 
-      functionCallInProgress ? 'Function call detected' : 'No function call',
-      functionCallProcessed ? '(processed)' : '(not processed)');
+             // Execute the local function based on name and arguments
+             // Re-using the processFunctionCall logic, which returns MessageContent
+             const processedResult = processFunctionCall(functionName, functionArguments);
 
-    if (usage && onUsage) {
-      onUsage(usage);
+             if (processedResult) {
+                 // If it's a structured result (flashcard, search_result), pass it to onFlashcardContent
+                 if (processedResult.type === 'flashcard' || processedResult.type === 'flashcard_set' || processedResult.type === 'search_result') {
+                     if (onFlashcardContent) {
+                         onFlashcardContent(processedResult); // Pass the structured content to the UI
+                     }
+                     // For the tool message content, provide a string indicating success or a summary
+                     // This is what the model sees as the result of the tool call
+                     if (processedResult.type === 'flashcard') functionResultContent = `Flashcard created: ${processedResult.flashcard?.question}`; // Use 'question' instead of 'front'
+                     else if (processedResult.type === 'flashcard_set') functionResultContent = `Flashcard set created: ${processedResult.flashcardSet?.title} with ${processedResult.flashcardSet?.cards.length} cards.`;
+                     else if (processedResult.type === 'search_result') functionResultContent = `Image search completed. Image URL: ${processedResult.searchResult?.imageUrl || 'N/A'}`;
+                     else functionResultContent = `Function ${functionName} executed successfully.`; // Generic success
+                 } else if (processedResult.type === 'text' && typeof processedResult.text === 'string') { // Check for type 'text' and access 'text' property
+                     // If the result is simple text content
+                     functionResultContent = processedResult.text;
+                 } else {
+                     // Fallback for other complex results - stringify or provide a summary
+                     functionResultContent = `Function ${functionName} executed, result type: ${processedResult.type}.`;
+                     console.warn(`Unexpected processedResult type for tool message content: ${processedResult.type}`);
+                 }
+
+             } else {
+                 functionExecutionError = `Function ${functionName} did not return expected content.`;
+                 functionResultContent = functionExecutionError;
+             }
+
+          } catch (error) {
+            console.error(`Error executing local function ${functionName}:`, error);
+            functionExecutionError = `Error executing function ${functionName}: ${error instanceof Error ? error.message : String(error)}`;
+            functionResultContent = functionExecutionError; // Report error in tool message content
+          }
+
+          // Create the tool message
+          const toolMessage: Message = {
+            role: 'tool',
+            tool_call_id: toolCallId,
+            name: functionName,
+            content: typeof functionResultContent === 'string' ? functionResultContent : JSON.stringify(functionResultContent), // Tool content is typically string
+          };
+          toolMessages.push(toolMessage);
+          conversationHistory.push(toolMessage); // Add tool message to history for the second call
+        } else {
+            console.warn("Received unexpected tool call format:", toolCall);
+        }
+      }
+
+      console.log("Sending second request with tool results.");
+      // Send the second request with updated history
+      const secondPayload = {
+        model: model,
+        messages: conversationHistory, // Use the history including assistant and tool messages
+        stream: false, // Second request is also non-streaming
+        // No tools/tool_choice needed in the second request
+      };
+
+      const secondResponse = await fetchWithRetry(url, { // Use fetchWithRetry
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(secondPayload),
+        signal: signal // Pass the abort signal
+      });
+
+      const secondData = await secondResponse.json();
+      console.log("Second response received:", secondData);
+
+      const finalAssistantMessage = secondData?.choices?.[0]?.message;
+
+      if (finalAssistantMessage?.content) {
+          onChunk(finalAssistantMessage.content); // Deliver the final text content
+      } else {
+          console.warn("Second response did not contain text content.");
+          // Do not call onChunk with a generic message here to suppress chat output
+      }
+
+    } else {
+      // No tool calls, the first response contains the final content
+      console.log("No tool calls detected. Processing first response as final.");
+      if (assistantMessage?.content) {
+          onChunk(assistantMessage.content); // Deliver the final text content
+      } else {
+          console.warn("First response did not contain text content.");
+          // Do not call onChunk with a generic message here to suppress chat output
+      }
     }
+
+    console.log('Completion process complete.');
+
   } catch (error) {
-    console.error('Error in streamCompletion:', error);
-    throw new Error('Failed to get AI response. Please check your configuration.');
+    console.error("Error during chat completion:", error);
+    // Don't call onChunk with error messages to suppress chat output
+    // Re-throw if it's an abort error so App.tsx can handle it
+    if ((error as Error).message.includes("aborted")) {
+        console.log("Fetch aborted.");
+        throw error;
+    } else {
+        // For other errors, just log and let the process end
+        console.error("Failed to get AI response after retries.");
+        // Optionally, you might want a subtle visual indicator in the UI via a different mechanism
+        // than onChunk if an error persists after retries, but for now, suppress chat output.
+    }
   }
 };
 
 /**
  * Helper function to check if a JSON string is complete/valid
+ * This is less relevant for the non-streaming approach but kept for robustness if needed elsewhere.
  */
 function isCompleteJson(jsonString: string): boolean {
   try {
@@ -312,40 +295,49 @@ function isCompleteJson(jsonString: string): boolean {
     if (!jsonString.includes('{') || !jsonString.includes('}')) {
       return false;
     }
-    
-    // Check for balanced braces
+
+    // Check for balanced braces (simple check, might fail on complex strings within JSON)
     let braceCount = 0;
     let inString = false;
     let escaped = false;
-    
+
     for (let i = 0; i < jsonString.length; i++) {
       const char = jsonString[i];
-      
+
       if (char === '"' && !escaped) {
         inString = !inString;
       }
-      
-      escaped = inString && char === '\\' && !escaped;
-      
+
+      // Basic escape handling: if current char is \, next char is escaped
+      if (inString && char === '\\' && !escaped) {
+          escaped = true;
+          continue; // Skip to next char
+      }
+
+
       if (!inString) {
         if (char === '{') {
           braceCount++;
         } else if (char === '}') {
           braceCount--;
-          if (braceCount < 0) return false;
+          if (braceCount < 0) return false; // More closing than opening
         }
       }
+      escaped = false; // Reset escape status after checking char
     }
-    
-    if (braceCount !== 0) return false;
-    
-    // Try to parse the JSON
+
+    if (braceCount !== 0) return false; // Unbalanced braces
+
+    // Try to parse the JSON as the final check
     JSON.parse(jsonString);
     return true;
   } catch (e) {
+    // console.log("isCompleteJson check failed:", e); // Optional: log parsing errors
     return false;
   }
 }
+
+// --- Image Handling Functions (Kept as they are independent of the AI client) ---
 
 // Helper function to get Data URL (original functionality)
 const getImageDataUrl = async (file: File): Promise<string> => {
@@ -365,6 +357,9 @@ const resizeImageIfNeeded = async (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (event) => {
+      if (!event.target?.result) {
+          return reject(new Error("FileReader failed to load image."));
+      }
       const img = new Image();
       img.onload = () => {
         const width = img.width;
@@ -402,7 +397,7 @@ const resizeImageIfNeeded = async (file: File): Promise<string> => {
         console.log(`Image resized from ${width}x${height} to ${newWidth}x${newHeight}`);
         resolve(resizedDataUrl);
       };
-      img.onerror = reject;
+      img.onerror = (e) => reject(new Error(`Image loading failed: ${e}`));
       img.src = event.target?.result as string;
     };
     reader.onerror = reject;
@@ -413,18 +408,18 @@ const resizeImageIfNeeded = async (file: File): Promise<string> => {
 
 export const createMessageContent = async (text: string, imageFile?: File): Promise<MessageContent[]> => {
   const content: MessageContent[] = [];
-  
+
   if (text) {
     content.push({ type: 'text', text });
   }
-  
+
   if (imageFile) {
     // Define the maximum file size based on OpenAI documentation (20MB)
     const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
 
     if (imageFile.size > MAX_FILE_SIZE_BYTES) {
       console.warn('Image file size exceeds 20MB limit. Attempting upload to temporary service.');
-      
+
       const uploadUrl = 'https://tmpfiles.org/api/v1/upload';
       const formData = new FormData();
       formData.append('file', imageFile);
@@ -433,6 +428,7 @@ export const createMessageContent = async (text: string, imageFile?: File): Prom
         const response = await fetch(uploadUrl, {
           method: 'POST',
           body: formData,
+          // Note: AbortSignal might be useful here too if uploads can be cancelled
         });
 
         if (!response.ok) {
@@ -448,7 +444,7 @@ export const createMessageContent = async (text: string, imageFile?: File): Prom
           type: 'image_url',
           image_url: {
             url: imageUrl,
-            details: 'low' // Corrected property name from detail to details
+            // Detail level might not be applicable for external URLs
           }
         });
            // Optionally, add a user-facing message about the successful upload
@@ -472,7 +468,8 @@ export const createMessageContent = async (text: string, imageFile?: File): Prom
         type: 'image_url',
         image_url: {
           url: imageUrl,
-          details: 'low' // Corrected property name from detail to details
+          // Detail low is suitable for data URLs processed by the model
+          details: 'low'
         }
       });
       } catch (error) {
@@ -481,7 +478,7 @@ export const createMessageContent = async (text: string, imageFile?: File): Prom
       }
     }
   }
-  
+
   return content;
 };
 
