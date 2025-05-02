@@ -1,11 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
-import type { 
-  MessageContent, 
-  BasicFlashcard, 
-  MCQFlashcard, 
-  TrueFalseFlashcard, 
-  FlashcardSet 
+import type {
+  MessageContent,
+  BasicFlashcard,
+  MCQFlashcard,
+  TrueFalseFlashcard,
+  FlashcardSet
 } from '../types';
+import { get_syllabus } from './syllabusReader'; // Import the get_syllabus function
 
 /**
  * Validates that the parsed JSON has the required fields for a basic flashcard
@@ -228,7 +229,7 @@ export function handleCreateFlashcardSet(args: string): MessageContent {
  */
 export function processFunctionCall(name: string, args: string): MessageContent | null {
   console.log(`Processing function call: ${name}`);
-  
+
   try {
     switch (name) {
       case 'create_flashcard':
@@ -239,12 +240,46 @@ export function processFunctionCall(name: string, args: string): MessageContent 
         return handleCreateTrueFalse(args);
       case 'create_flashcard_set':
         return handleCreateFlashcardSet(args);
+      case 'get_syllabus':
+        try {
+          const params = JSON.parse(args);
+          // Assuming get_syllabus is accessible in this scope (e.g., imported or passed)
+          // If not directly accessible, you might need to refactor where processFunctionCall lives
+          // For now, assuming it's available.
+          // Need to import get_syllabus here if it's not globally available or passed in
+          // import { get_syllabus } from './syllabusReader'; // <-- Add this import if needed
+
+          if (!params.subject || typeof params.subject !== 'string') {
+             console.error('get_syllabus validation failed: missing or invalid subject');
+             return { type: 'text', text: 'Error: Invalid subject provided for get_syllabus function.' };
+          }
+
+          // Call the actual get_syllabus function (now synchronous)
+          const syllabusContent = get_syllabus(params.subject);
+
+          // Return the syllabus content as a text message content
+          return {
+            type: 'text',
+            text: syllabusContent
+          };
+        } catch (error) {
+          console.error('Error handling get_syllabus:', error);
+          console.error('Arguments received:', args);
+          // Return an error message as text content
+          return {
+            type: 'text',
+            text: 'Error retrieving syllabus: ' + (error instanceof Error ? error.message : String(error))
+          };
+        }
       default:
         console.warn(`Unknown function call: ${name}`);
         return null;
     }
   } catch (error) {
     console.error(`Error in processFunctionCall for ${name}:`, error);
-    throw error;
+    // Note: The catch block here is for errors *within* the switch cases.
+    // Errors from parsing args or the initial switch logic would be caught here.
+    // Errors from the async get_syllabus call are handled within its case's try/catch.
+    throw error; // Re-throw unexpected errors
   }
-} 
+}

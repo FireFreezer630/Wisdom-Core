@@ -290,6 +290,31 @@ export const functionDefinitions = [
       required: ["query"]
     }
   },
+  {
+    // Schema for get_syllabus function
+    name: "get_syllabus",
+    description: "Retrieves the syllabus content for a specific academic subject by accessing its text file.",
+    parameters: {
+      type: "object",
+      properties: {
+        subject: {
+          type: "string",
+          description: "The academic subject for which to retrieve the syllabus (e.g., Chemistry, Physics).",
+          enum: [
+            "Chemistry",
+            "Physics",
+            "Biology",
+            "Mathematics",
+            "English",
+            "Computer Science"
+          ]
+        }
+      },
+      required: ["subject"],
+      additionalProperties: false // Ensure strictness
+    },
+    strict: true // Enforce schema adherence
+  },
   // Add the image search tool
   imageSearchTool
 ];

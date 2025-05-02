@@ -4,6 +4,7 @@ import type { Flashcard, BasicFlashcard, MCQFlashcard, TrueFalseFlashcard, Flash
 import { functionDefinitions } from '../types'; // Assuming functionDefinitions is defined here or imported
 import { processFunctionCall } from './flashcardHandler'; // Assuming processFunctionCall is imported
 import { findFirstImageUrl } from './findFirstImageUrl'; // Assuming findFirstImageUrl is imported
+import { get_syllabus } from './syllabusReader'; // Import the new syllabus reader function
 
 // Model can still be read from environment or defaulted
 const model = import.meta.env.VITE_OPENAI_MODEL || 'openai'; // Default to 'openai' if not set
@@ -178,10 +179,11 @@ export const streamCompletion = async (
           try {
              // Execute the local function based on name and arguments
              // Re-using the processFunctionCall logic, which returns MessageContent
-             const processedResult = processFunctionCall(functionName, functionArguments);
+             const processedResult = await processFunctionCall(functionName, functionArguments); // Await the async function
 
              if (processedResult) {
                  // If it's a structured result (flashcard, search_result), pass it to onFlashcardContent
+                 // Now that processedResult is awaited, we can access its properties directly
                  if (processedResult.type === 'flashcard' || processedResult.type === 'flashcard_set' || processedResult.type === 'search_result') {
                      if (onFlashcardContent) {
                          onFlashcardContent(processedResult); // Pass the structured content to the UI

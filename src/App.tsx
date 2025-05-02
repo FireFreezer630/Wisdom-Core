@@ -9,6 +9,7 @@ import { streamCompletion, createMessageContent } from './lib/openai';
 import { useChatStore } from './store/chatStore';
 import { useTheme } from './lib/ThemeProvider';
 import type { Message, ChatState, MessageContent } from './types';
+import WelcomeMenu from './components/WelcomeMenu'; // Import the WelcomeMenu component
 
 function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -17,6 +18,12 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   // Removed usage state as the new endpoint doesn't support it
   const { isDarkMode, toggleDarkMode } = useTheme();
+
+  // State to manage welcome menu visibility, initialized based on localStorage
+  const [showWelcome, setShowWelcome] = useState(() => {
+    const hasSeenWelcome = localStorage.getItem('wisdom-core-seen-welcome');
+    return hasSeenWelcome !== 'true';
+  });
 
   const abortControllerRef = useRef<AbortController | null>(null); // Ref for AbortController
 
@@ -32,12 +39,33 @@ function App() {
     if (Notification.permission === 'default') {
       Notification.requestPermission();
     }
+    // No need for a separate localStorage check here, state is initialized with it
   }, []);
+
+  // Function to handle clicking "Continue" on the welcome menu
+  const handleContinue = () => {
+    setShowWelcome(false);
+    localStorage.setItem('wisdom-core-seen-welcome', 'true');
+  };
 
   const activeConversation = conversations.find(conv => conv.id === activeConversationId);
 
+  // Define these classes here as they are used in multiple rendering paths
+  const bgClass = isDarkMode
+    ? 'bg-app-bg-dark'
+    : 'bg-gradient-to-br from-app-bg-light to-app-bg';
+
+  const headerClass = isDarkMode
+    ? 'bg-app-card-dark border-gray-700'
+    : 'bg-app-card-light border-app-bg';
+
+  // Define message handling functions outside conditional blocks
   const handleSendMessage = async (text: string, imageFile?: File) => {
-    if (!activeConversationId || !activeConversation) return;
+    // Ensure activeConversation is defined before proceeding
+    if (!activeConversationId || !activeConversation) {
+        console.warn("Attempted to send message without active conversation.");
+        return;
+    }
 
     // Await message content creation to ensure file processing is complete
     const messageContent = await createMessageContent(text, imageFile);
@@ -229,18 +257,101 @@ function App() {
   };
 
 
-  const bgClass = isDarkMode
-    ? 'bg-app-bg-dark'
-    : 'bg-gradient-to-br from-app-bg-light to-app-bg';
+  return (
+    <div className={`${bgClass} min-h-screen flex text-gray-800 dark:text-white`}>
+      <Sidebar /> {/* Sidebar is always present */}
 
-  const headerClass = isDarkMode
-    ? 'bg-app-card-dark border-gray-700'
-    : 'bg-app-card-light border-app-bg';
+      {showWelcome ? (
+        <WelcomeMenu onContinue={handleContinue} />
+      ) : activeConversation ? (
+        <main className="w-full flex flex-col">
+          {/* Fixed header */}
+          <div className={`fixed top-0 left-0 right-0 ${headerClass} border-b z-20 shadow-md`}>
+            <div className="flex items-center justify-between p-4 max-w-screen-2xl mx-auto">
+              <div className="flex items-center gap-3 md:pl-[calc(16rem+1rem)]">
+                <div className="h-10 w-10 md:h-12 md:w-12 bg-app-purple rounded-xl flex items-center justify-center">
+                  <GraduationCap className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                </div>
+                <h1 className="text-xl md:text-2xl font-bold truncate">WisdomCore</h1>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={toggleDarkMode}
+                  className={`p-2 rounded-xl ${
+                    isDarkMode ? 'bg-app-card-dark hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
+                  } transition-colors shadow-sm`}
+                  aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                >
+                  {isDarkMode ? (
+                    <Sun className="h-5 w-5 md:h-6 md:w-6 text-yellow-300" />
+                  ) : (
+                    <Moon className="h-5 w-5 md:h-6 md:w-6 text-gray-600" />
+                  )}
+                </button>
+                <button
+                  onClick={() => setIsTimerOpen(true)}
+                  className={`p-2 rounded-xl relative ${
+                    isDarkMode ? 'bg-app-card-dark hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
+                  } transition-colors shadow-sm`}
+                  aria-label="Timer settings"
+                >
+                  <Clock className={`h-5 w-5 md:h-6 md:w-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+                  {timer.endTime && (
+                    <div className="absolute -top-1 -right-1 h-3 w-3 bg-app-purple rounded-full" />
+                  )}
+                </button>
+                <button
+                  onClick={() => setIsSettingsOpen(true)}
+                  className={`p-2 rounded-xl ${
+                    isDarkMode ? 'bg-app-card-dark hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
+                  } transition-colors shadow-sm`}
+                  aria-label="Open settings"
+                >
+                  <Settings className={`h-5 w-5 md:h-6 md:w-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+                </button>
+              </div>
+            </div>
+          </div>
 
-  if (!activeConversation) {
-    return (
-      <div className={`${bgClass} min-h-screen flex text-gray-800 dark:text-white`}>
-        <Sidebar />
+          {/* Main content area: either chat or select conversation message */}
+          <> {/* Fragment for multiple elements */}
+            {/* Messages container */}
+            <div className="flex-1 overflow-hidden flex flex-col pt-[72px] pb-[76px] md:ml-64">
+              <div className="flex-1 overflow-y-auto p-4 md:p-6">
+                <div className="max-w-4xl mx-auto space-y-4 px-0 md:px-2 scrollbar-thin">
+                  {activeConversation.messages.map((message, index) => (
+                    <ChatMessage
+                      key={index}
+                      role={message.role}
+                      content={message.content}
+                    />
+                  ))}
+                </div>
+                {error && (
+                  <div className="max-w-4xl mx-auto text-red-500 text-sm mt-4 p-3 rounded-xl bg-red-50 dark:bg-red-900/20">
+                    {error}
+                  </div>
+                )}
+              </div>
+
+              {/* Fixed chat input */}
+              <div className={`fixed bottom-0 left-0 right-0 z-10`}>
+                <ChatInput
+                  onSend={handleSendMessage}
+                  disabled={isLoading}
+                  isLoading={isLoading}
+                  onStop={handleStopGenerating}
+                />
+              </div>
+            </div>
+
+            {/* Modals - placed here as they are part of the main chat view */}
+            <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+            <TimerModal isOpen={isTimerOpen} onClose={() => setIsTimerOpen(false)} />
+          </>
+        </main>
+      ) : (
+        // "Select or create" message when no active conversation and not showing welcome
         <main className="w-full flex items-center justify-center pl-0">
           <div className={`${headerClass} shadow-app dark:shadow-app-dark rounded-2xl p-8 max-w-md text-center`}>
             <GraduationCap className="h-16 w-16 mx-auto mb-4 text-app-purple" />
@@ -250,106 +361,7 @@ function App() {
             </p>
           </div>
         </main>
-      </div>
-    );
-  }
-
-  return (
-    <div className={`${bgClass} min-h-screen flex text-gray-800 dark:text-white`}>
-      <Sidebar />
-
-      <main className="w-full flex flex-col">
-        {/* Fixed header - full width */}
-        <div className={`fixed top-0 left-0 right-0 ${headerClass} border-b z-20 shadow-md`}>
-          <div className="flex items-center justify-between p-4 max-w-screen-2xl mx-auto">
-            <div className="flex items-center gap-3 md:pl-[calc(16rem+1rem)]">
-              <div className="h-10 w-10 md:h-12 md:w-12 bg-app-purple rounded-xl flex items-center justify-center">
-                <GraduationCap className="h-5 w-5 md:h-6 md:w-6 text-white" />
-              </div>
-              <h1 className="text-xl md:text-2xl font-bold truncate">WisdomCore</h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={toggleDarkMode}
-                className={`p-2 rounded-xl ${
-                  isDarkMode ? 'bg-app-card-dark hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
-                } transition-colors shadow-sm`}
-                aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-              >
-                {isDarkMode ? (
-                  <Sun className="h-5 w-5 md:h-6 md:w-6 text-yellow-300" />
-                ) : (
-                  <Moon className="h-5 w-5 md:h-6 md:w-6 text-gray-600" />
-                )}
-              </button>
-              <button
-                onClick={() => setIsTimerOpen(true)}
-                className={`p-2 rounded-xl relative ${
-                  isDarkMode ? 'bg-app-card-dark hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
-                } transition-colors shadow-sm`}
-                aria-label="Timer settings"
-              >
-                <Clock className={`h-5 w-5 md:h-6 md:w-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
-                {timer.endTime && (
-                  <div className="absolute -top-1 -right-1 h-3 w-3 bg-app-purple rounded-full" />
-                )}
-              </button>
-              <button
-                onClick={() => setIsSettingsOpen(true)}
-                className={`p-2 rounded-xl ${
-                  isDarkMode ? 'bg-app-card-dark hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
-                } transition-colors shadow-sm`}
-                aria-label="Open settings"
-              >
-                <Settings className={`h-5 w-5 md:h-6 md:w-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Content area with padding for header and input */}
-        <div className="flex-1 overflow-hidden flex flex-col pt-[72px] pb-[76px] md:ml-64">
-          {/* Messages container with padding at the bottom to ensure space for fixed input */}
-          <div className="flex-1 overflow-y-auto p-4 md:p-6">
-            <div className="max-w-4xl mx-auto space-y-4 px-0 md:px-2 scrollbar-thin">
-              {activeConversation.messages.map((message, index) => (
-                <ChatMessage
-                  key={index}
-                  role={message.role}
-                  content={message.content}
-                />
-              ))}
-            </div>
-
-            {error && (
-              <div className="max-w-4xl mx-auto text-red-500 text-sm mt-4 p-3 rounded-xl bg-red-50 dark:bg-red-900/20">
-                {error}
-              </div>
-            )}
-
-            {/* Removed usage display */}
-          </div>
-
-          {/* Fixed chat input at the bottom - full width */}
-          <div className={`fixed bottom-0 left-0 right-0 z-10`}>
-            <ChatInput
-              onSend={handleSendMessage}
-              disabled={isLoading}
-              isLoading={isLoading} // Pass isLoading state
-              onStop={handleStopGenerating} // Pass stop handler
-            />
-          </div>
-        </div>
-      </main>
-
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-      />
-      <TimerModal
-        isOpen={isTimerOpen}
-        onClose={() => setIsTimerOpen(false)}
-      />
+      )}
     </div>
   );
 }

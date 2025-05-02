@@ -1,0 +1,149 @@
+
+CLASS X MATHS Syllabus
+
+1. Commercial Mathematics
+
+(i) Goods and Services Tax (GST)
+    Computation of tax including problems involving discounts, list-price, profit, loss, basic/cost price including inverse cases. [cite: 69]
+    Candidates are also expected to find price paid by the consumer after paying State Goods and Service Tax (SGST) and Central Goods and Service Tax (CGST) [cite: 70] - the different rates as in vogue on different types of items will be provided. [cite: 70]
+    Problems based on corresponding inverse cases are also included. [cite: 71]
+
+(ii) Banking
+    Recurring Deposit Accounts: computation of interest and maturity value using the formula: [cite: 71]
+    <span class="math-inline">I \= P \\frac\{n\(n\+1\)\}\{2 \\times 12\} \\times \\frac\{r\}\{100\}</span> [cite: 71]
+    <span class="math-inline">MV \= P \\times n \+ I</span> [cite: 71]
+
+(iii) Shares and Dividends
+    (a) Face/Nominal Value, Market Value, Dividend, Rate of Dividend, Premium. [cite: 71]
+    (b) Formulae [cite: 72]
+        Income = number of shares <span class="math-inline">\\times</span> rate of dividend <span class="math-inline">\\times</span> FV. [cite: 72]
+        Return (Income / Investment) <span class="math-inline">\\times</span> 100. [cite: 72]
+    Note: Brokerage and fractional shares not included. [cite: 72]
+
+2. Algebra
+
+(i) Linear Inequations
+    Linear Inequations in one unknown for <span class="math-inline">x \\in N, W, Z, R</span>. Solving: [cite: 73]
+    * Algebraically and writing the solution in set notation form. [cite: 73]
+    * Representation of solution on the number line. [cite: 74]
+
+(ii) Quadratic Equations in one variable
+    (a) Nature of roots [cite: 74]
+        * Two distinct real roots if <span class="math-inline">b^2 \- 4ac \> 0</span> [cite: 74]
+        * Two equal real roots if <span class="math-inline">b^2 \- 4ac \= 0</span> [cite: 74]
+        * No real roots if <span class="math-inline">b^2 \- 4ac < 0</span> [cite: 74]
+    (b) Solving Quadratic equations by: [cite: 74]
+        * Factorisation [cite: 74]
+        * Using Formula. [cite: 74]
+    (c) Solving simple quadratic equation problems. [cite: 75]
+
+(iii) Ratio and Proportion
+    (a) Proportion, Continued proportion, mean proportion [cite: 75]
+    (b) Componendo, dividendo, alternendo, invertendo properties and their combinations. [cite: 75]
+    (c) Direct simple applications on proportions only. [cite: 76]
+
+(iv) Factorisation of polynomials:
+    (a) Factor Theorem. [cite: 76]
+    (b) Remainder Theorem. [cite: 76]
+    (c) Factorising a polynomial completely after obtaining one factor by factor theorem. [cite: 77]
+    Note: <span class="math-inline">f\(x\)</span> not to exceed degree 3. [cite: 78]
+
+(v) Matrices
+    (a) Order of a matrix. Row and column matrices. [cite: 78]
+    (b) Compatibility for addition and multiplication. [cite: 78]
+    (c) Null and Identity matrices. [cite: 79]
+    (d) Addition and subtraction of <span class="math-inline">2 \\times 2</span> matrices. [cite: 79]
+    (e) Multiplication of a <span class="math-inline">2 \\times 2</span> matrix by a non-zero rational number or a matrix. [cite: 80]
+
+(vi) Arithmetic and Geometric Progression
+    Finding their General term. [cite: 80]
+    Finding Sum of their first 'n' terms. [cite: 81]
+    Simple Applications. [cite: 81]
+
+(vii) Co-ordinate Geometry
+    (a) Reflection [cite: 81]
+        (i) Reflection of a point in a line: <span class="math-inline">x\=0</span>, <span class="math-inline">y\=0</span>, <span class="math-inline">x\=a</span>, <span class="math-inline">y\=a</span>, the origin. [cite: 81]
+        (ii) Reflection of a point in the origin. [cite: 82]
+        (iii) Invariant points. [cite: 82]
+    (b) Co-ordinates expressed as <span class="math-inline">\(x,y\)</span>, Section formula, Midpoint formula, Concept of slope, equation of a line, Various forms of straight lines. [cite: 83]
+        (i) Section and Mid-point formula (Internal section only, co-ordinates of the centroid of a triangle included). [cite: 84]
+        (ii) Equation of a line: [cite: 85]
+            * Slope-intercept form <span class="math-inline">y \= mx \+ c</span> [cite: 85]
+            * Two-point form <span class="math-inline">\(y \- y\_1\) \= m\(x \- x\_1\)</span> [cite: 85]
+            Geometric understanding of 'm' as slope/ gradient/ <span class="math-inline">\\tan \\theta</span> where <span class="math-inline">\\theta</span> is the angle the line makes with the positive direction of the x axis. [cite: 85]
+            Geometric understanding of 'c' as the y-intercept/the ordinate of the point where the line intercepts the y axis/ the point on the line where <span class="math-inline">x\=0</span>. [cite: 86]
+            Conditions for two lines to be parallel or perpendicular. [cite: 86]
+            Simple applications of all the above. [cite: 87]
+
+3. Geometry
+
+(a) Similarity
+    Similarity, conditions of similar triangles. [cite: 87]
+    (i) As a size transformation. [cite: 87]
+    (ii) Comparison with congruency, keyword being proportionality. [cite: 88]
+    (iii) Three conditions: SSS, SAS, AA. Simple applications (proof not included). [cite: 88]
+    (iv) Applications of Basic Proportionality Theorem. [cite: 89]
+    (v) Areas of similar triangles are proportional to the squares of corresponding sides. [cite: 89]
+    (vi) Direct applications based on the above including applications to maps and models. [cite: 90]
+
+(b) Loci
+    Loci: Definition, meaning. Theorems and constructions based on Loci. [cite: 90]
+    (i) The locus of a point at a fixed distance from a fixed point is a circle with the fixed point as centre and fixed distance as radius. [cite: 91]
+    (ii) The locus of a point equidistant from two intersecting lines is the bisector of the angles between the lines. [cite: 92]
+    (iii) The locus of a point equidistant from two given points is the perpendicular bisector of the line joining the points. [cite: 93]
+    Proofs not required. [cite: 94]
+
+(c) Circles
+    (i) Angle Properties
+        * The angle that an arc of a circle subtends at the centre is double that which it subtends at any point on the remaining part of the circle. [cite: 94]
+        * Angles in the same segment of a circle are equal (without proof). [cite: 95]
+        * Angle in a semi-circle is a right angle. [cite: 95]
+    (ii) Cyclic Properties: [cite: 96]
+        * Opposite angles of a cyclic quadrilateral are supplementary. [cite: 96]
+        * The exterior angle of a cyclic quadrilateral is equal to the opposite interior angle (without proof). [cite: 96]
+    (iii) Tangent and Secant Properties: [cite: 98]
+        * The tangent at any point of a circle and the radius through the point are perpendicular to each other. [cite: 98]
+        * If two circles touch, the point of contact lies on the straight line joining their centres. [cite: 99]
+        * From any point outside a circle, two tangents can be drawn, and they are equal in length. [cite: 100]
+        * If two chords intersect internally or externally then the product of the lengths of the segments are equal. [cite: 101]
+        * If a chord and a tangent intersect externally, then the product of the lengths of segments of the chord is equal to the square of the length of the tangent from the point of contact to the point of intersection. [cite: 102]
+        * If a line touches a circle and from the point of contact, a chord is drawn, the angles between the tangent and the chord are respectively equal to the angles in the corresponding alternate segments. [cite: 103]
+    Note: Proofs of the theorems given above are to be taught unless specified otherwise. [cite: 104]
+    (iv) Constructions [cite: 105]
+        (a) Construction of tangents to a circle from an external point. [cite: 105]
+        (b) Circumscribing and inscribing a circle on a triangle and a regular hexagon. [cite: 105]
+
+4. Mensuration
+
+Area and volume of solids – Cylinder, Cone and Sphere. [cite: 106]
+Three-dimensional solids: right circular cylinder, right circular cone and sphere: Area (total surface and curved surface) and Volume. [cite: 106]
+Direct application problems including cost, Inner and Outer volume and melting and recasting method to find the volume or surface area of a new solid. [cite: 107]
+Combination of solids included. [cite: 108]
+Note: Problems on Frustum are not included. [cite: 108]
+
+5. Trigonometry
+
+(a) Using Identities to solve/prove simple algebraic trigonometric expressions [cite: 109]
+    <span class="math-inline">sin^2 A \+ cos^2 A \= 1</span> [cite: 109]
+    <span class="math-inline">1 \+ tan^2 A \= sec^2 A</span> [cite: 109]
+    <span class="math-inline">1 \+ cot^2 A \= cosec^2 A</span>; <span class="math-inline">0 \\le A \\le 90^\{\\circ\}</span> [cite: 109, 110]
+(b) Heights and distances: Solving 2-D problems involving angles of elevation and depression using trigonometric tables. [cite: 110]
+Note: Cases involving more than two right angled triangles excluded. [cite: 111]
+
+6. Statistics
+
+Statistics – basic concepts, Mean, Median, Mode. Histograms and Ogive. [cite: 111]
+(a) Computation of: [cite: 112]
+    * Measures of Central Tendency: Mean, median, mode for raw and arrayed data. [cite: 112]
+    * Mean*, median class and modal class for grouped data. (both continuous and discontinuous). [cite: 113]
+    * * Mean by all 3 methods included: [cite: 114]
+        Direct: <span class="math-inline">\\frac\{\\Sigma f x\}\{\\Sigma f\}</span> [cite: 114]
+        Short-cut: <span class="math-inline">A \+ \\frac\{\\Sigma f d\}\{\\Sigma f\}</span> where <span class="math-inline">d \= x \- A</span> [cite: 114]
+        Step-deviation: <span class="math-inline">A \+ \\frac\{\\Sigma f t\}\{\\Sigma f\} \\times i</span> where <span class="math-inline">t \= \\frac\{x \- A\}\{i\}</span> [cite: 114]
+(b) Graphical Representation. Histograms and Less than Ogive. [cite: 114, 115]
+    * Finding the mode from the histogram, the upper quartile, lower Quartile and median etc. from the ogive. [cite: 115]
+    * Calculation of inter Quartile range. [cite: 116]
+
+7. Probability
+
+Random experiments, Sample space, Events, definition of probability, Simple problems on single events. [cite: 116]

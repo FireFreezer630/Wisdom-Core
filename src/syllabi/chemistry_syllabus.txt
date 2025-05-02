@@ -1,0 +1,215 @@
+CLASS X
+CHSEMISTRY 
+There will be one paper of two hours duration of 80 marks and Internal Assessment of practical work carrying 20 marks[cite: 58].
+Note: All chemical processes/reactions should be studied with reference to the reactants, products, conditions, observations and the (balanced) equations and diagrams[cite: 59].
+
+1. Periodic Properties and variations of Properties Physical and Chemical
+(i) Periodic properties and their variations in groups and periods[cite: 60].
+Definitions and trends of the following periodic properties in groups and periods should be studied:
+atomic size
+metallic character
+non-metallic character
+ionisation potential
+electron affinity
+electronegativity
+(ii) Periodicity on the basis of atomic number for elements[cite: 62].
+The study of modern periodic table up to period 3 (students to be exposed to the complete modern periodic table but no questions will be asked on elements beyond period 3 - Argon)[cite: 62]; Periodicity and other related properties to be explained on the basis of nuclear charge and shells (not orbitals)[cite: 63]. (Special reference to the alkali metals and halogen groups)[cite: 64].
+
+2. Chemical Bonding
+Electrovalent, covalent and co-ordinate bonding, structures of various compounds, Electron dot structure[cite: 65].
+(a) Electrovalent bonding:
+Electron dot structure of Electrovalent compounds $\text{NaCl, MgCl}_2\text{, CaO}$[cite: 65]. Characteristic properties of electrovalent compounds state of existence, melting and boiling points, conductivity (heat and electricity), dissociation in solution and in molten state to be linked with electrolysis[cite: 66].
+(b) Covalent Bonding:
+Electron dot structure of covalent molecules on the basis of duplet and octet of electrons (example: hydrogen, chlorine, nitrogen, ammonia, carbon tetrachloride, methane.)[cite: 67].
+Polar Covalent compounds based on difference in electronegativity:
+Examples $\text{HCl}$ and $\text{H}_2\text{O}$ including structures[cite: 67].
+Characteristic properties of Covalent compounds state of existence, melting and boiling points, conductivity (heat and electricity), ionisation in solution[cite: 67].
+Comparison of Electrovalent and Covalent compounds[cite: 67].
+(c) Coordinate Bonding:
+Definition[cite: 67].
+The lone pair effect of the oxygen atom of the water molecule and the nitrogen atom of the ammonia molecule to explain the formation of $\text{H}_3\text{O}^+$ and $\text{OH}^-$ ions in water and $\text{NH}_4^+$ ion[cite: 67].
+The meaning of lone pair; the formation of hydronium ion and ammonium ion must be explained with the help of electron dot diagrams[cite: 68].
+
+3. Study of Acids, Bases and Salts
+(i) Simple definitions in terms of the molecules and their characteristic properties[cite: 69].
+(ii) Ions present in mineral acids, alkalis and salts and their solutions[cite: 70]; use of litmus and pH paper to test for acidity and alkalinity[cite: 70].
+Examples with equation for the ionisation/dissociation of ions of acids, bases and salts[cite: 71].
+Acids form hydronium ions (only positive ions) which turn blue litmus red, alkalis form hydroxyl ions (only negative ions) with water which turns red litmus blue[cite: 72].
+Salts are formed by partial or complete replacement of the hydrogen ion of an acid by a metal[cite: 73]. (To be explained with suitable examples)[cite: 74].
+Introduction to pH scale to test for acidity, neutrality and alkalinity by using pH paper or Universal indicator[cite: 74].
+(iii) Definition of salt; types of salts[cite: 75].
+Types of salts: normal salts, acid salt, basic salt, definition and examples[cite: 75].
+(iv) Action of dilute acids on salts[cite: 76].
+Decomposition of hydrogen carbonates, carbonates, sulphites and sulphides by appropriate acids with heating if necessary[cite: 76]. (Relevant laboratory work must be done)[cite: 77].
+(v) Methods of preparation of Normal salts with relevant equations[cite: 78]. (Details of apparatus or procedures not required)[cite: 78].
+Methods included are:
+Direct combination
+Displacement
+Precipitation (double decomposition)
+Neutralization of insoluble base
+Neutralisation of an alkali (titration)
+Action of dilute acids on carbonates and bi-carbonates[cite: 78].
+
+4. Analytical Chemistry
+(i) Action of Ammonium Hydroxide and Sodium Hydroxide on solution of salts: colour of salt and its solution[cite: 80]; formation and colour of hydroxide precipitated for solutions of salts of Ca, Fe, Cu, Zn and Pb[cite: 80]; special action of ammonium hydroxide on solutions of copper salt and sodium hydroxide on ammonium salts[cite: 81].
+On solution of salts:
+Colour of salt and its solution[cite: 82].
+Action on addition of Sodium Hydroxide to solution of Ca, Fe, Cu, Zn, and Pb salts drop by drop in excess[cite: 82]. Formation and colour of hydroxide precipitated to be highlighted with the help of equations[cite: 83].
+Action on addition of Ammonium Hydroxide to solution of Ca, Fe, Cu, Zn, and Pb salts drop by drop in excess[cite: 83]. Formation and colour of hydroxide precipitated to be highlighted with the help of equations[cite: 84].
+Special action of Ammonium Hydroxide on solutions of copper salts and sodium hydroxide on ammonium salts[cite: 85].
+(ii) Action of alkalis (NaOH, KOH) on certain metals, their oxides and hydroxides[cite: 86].
+The metals must include aluminium, zinc and lead, their oxides and hydroxides, which react with caustic alkalis (NaOH, KOH), showing the amphoteric nature of these substances[cite: 87].
+
+5. Mole Concept and Stoichiometry
+(i) Gay Lussac's Law of Combining Volumes; Avogadro's Law[cite: 88].
+Idea of mole a number just as a dozen, a gross (Avogadro's number)[cite: 89].
+Avogadro's Law statement and explanation[cite: 90].
+Gay Lussac's Law of Combining Volumes. Statement and explanation[cite: 90].
+Understanding molar volume- "the mass of 22.4 litres of any gas at S.T.P. is equal to its molar mass"[cite: 90]. (Questions will not be set on formal proof but may be taught for clear understanding)[cite: 91].
+Simple calculations based on the molar volume and Gay Lussac's law[cite: 92].
+(ii) Refer to the atomicity of hydrogen, oxygen, nitrogen and chlorine (proof not required)[cite: 93].
+The explanation can be given using equations for the formation of $\text{HCl, NH}_3$ and $\text{NO}$[cite: 94].
+(iii) Vapour Density and its relation to relative molecular mass:
+Molecular mass = 2xvapour density (formal proof not required)[cite: 95].
+Deduction of simple (empirical) and molecular formula from:
+(a) the percentage composition of a compound[cite: 96].
+(b) the masses of combining elements[cite: 96].
+(iv) Mole and its relation to mass[cite: 97].
+Relating mole and atomic mass; arriving at gram atomic mass and then gram atom; atomic mass is a number dealing with one atom[cite: 98]; gram atomic mass is the mass of one mole of atoms[cite: 98].
+Relating mole and molecular mass arriving at gram molecular mass and gram molecule molecular mass is a number dealing with a molecule, gram molecular mass is the mass of one mole of molecules[cite: 99].
+Simple calculations based on relation of mole to mass, volume and Avogadro's number[cite: 100].
+(v) Simple calculations based on chemical equations[cite: 101].
+Related to weight and/or volumes of both reactants and products[cite: 101].
+
+6. Electrolysis
+(i) Electrolytes and non-electrolytes[cite: 102].
+Definitions and examples[cite: 102].
+(ii) Substances containing molecules only, ions only, both molecules and ions[cite: 103].
+Substances containing molecules only ions only, both molecules and ions[cite: 103]. Examples; relating their composition with their behaviour as strong and weak electrolytes as well as non-electrolytes[cite: 104].
+(iii) Definition and explanation of electrolysis, electrolyte, electrode, anode, cathode, anion, cation, oxidation and reduction (on the basis of loss and gain of electrons)[cite: 105].
+(iv) An elementary study of the migration of ions, with reference to the factors influencing selective discharge of ions (reference should be made to the activity series as indicating the tendency of metals, e.g. Na, Mg, Fe, Cu, to form ions) illustrated by the electrolysis of:
+Molten lead bromide [cite: 106]
+acidified water with platinum electrodes [cite: 106]
+Aqueous copper (II) sulphate with copper electrodes[cite: 107]; electron transfer at the electrodes[cite: 107].
+The above electrolytic processes can be studied in terms of electrolyte used, electrodes used, ionization reaction, anode reaction, cathode reaction, use of selective discharge theory, wherever applicable[cite: 107].
+(v) Applications of electrolysis[cite: 108].
+Electroplating with nickel and silver, choice of electrolyte for electroplating[cite: 108].
+Electro refining of copper[cite: 108].
+Reasons and conditions for electroplating; names of the electrolytes and the electrodes used should be given[cite: 109]. Equations for the reactions at the electrodes should be given for electroplating, refining of copper[cite: 110].
+
+7. Metallurgy
+(i) Occurrence of metals in nature:
+Mineral and ore - Meaning only[cite: 111].
+Common ores of iron, aluminium and zinc[cite: 111].
+(ii) Stages involved in the extraction of metals[cite: 112].
+(a) Dressing of the ore hydrolytic method, magnetic separation, froth flotation method[cite: 112].
+(b) Conversion of concentrated ore to its oxide- roasting and calcination (definition, examples with equations)[cite: 113].
+(c) Reduction of metallic oxides- some can be reduced by hydrogen, carbon and carbon monoxide (e.g. copper oxide, lead (II) oxide, iron (III) oxide and zinc oxide) and some cannot (e.g. $\text{Al}_2\text{O}_3\text{, MgO}$) - refer to activity series)[cite: 114]. Active metals by electrolysis e.g. sodium, potassium and calcium. (reference only)[cite: 115].
+Equations with conditions should be given[cite: 115].
+(d) Electro refining - reference only[cite: 116].
+(iii) Extraction of Aluminium[cite: 117].
+(a) Chemical method for purifying bauxite by using $\text{NaOH}$- Baeyer's Process[cite: 117].
+(b) Electrolytic extraction Hall Heroult's process[cite: 118]:
+Structure of electrolytic cell the various components as part of the electrolyte, electrodes and electrode reactions[cite: 118].
+Description of the changes occurring, purpose of the substances used and the main reactions with their equations[cite: 119].
+(iv) Alloys composition and uses[cite: 120].
+Stainless steel, duralumin, brass, bronze, fuse metal/solder[cite: 120].
+
+8. Study of Compounds
+A. Hydrogen Chloride
+Hydrogen chloride: preparation of hydrogen chloride from sodium chloride[cite: 121]; refer to the density and solubility of hydrogen chloride (fountain experiment); reaction with ammonia; acidic properties of its solution[cite: 121].
+Preparation of hydrogen chloride from sodium chloride; the laboratory method of preparation can be learnt in terms of reactants, product, condition, equation, diagram or setting of the apparatus, procedure, observation, precaution, collection of the gas and identification[cite: 122].
+Simple experiment to show the density of the gas (Hydrogen Chloride) -heavier than air[cite: 123].
+Solubility of hydrogen chloride (fountain experiment)[cite: 124]; setting of the apparatus, procedure, observation, inference[cite: 124].
+Method of preparation of hydrochloric acid by dissolving the gas in water- the special arrangement and the mechanism by which the back suction is avoided should be learnt[cite: 124].
+Reaction with ammonia[cite: 125].
+Acidic properties of its solution - reaction with metals, their oxides, hydroxides and carbonates to give their chlorides[cite: 125]; decomposition of carbonates, hydrogen carbonates, sulphides, sulphites[cite: 126]. Precipitation reactions with silver nitrate solution and lead nitrate solution[cite: 126].
+
+B. Ammonia
+Ammonia: its laboratory preparation from ammonium chloride and collection; ammonia from nitrides like $\text{Mg}_3\text{N}_2$ and $\text{AIN}$ and ammonium salts. Manufacture by Haber's Process[cite: 127]; density and solubility of ammonia (fountain experiment); aqueous solution of ammonia; its reactions with hydrogen chloride and with hot copper (II) oxide and chlorine[cite: 128]; the burning of-ammonia in oxygen; uses of ammonia[cite: 129].
+Laboratory preparation from ammonium chloride and collection[cite: 130]; (the preparation to be studied in terms of, setting of the apparatus and diagram, procedure, observation, collection and identification)[cite: 130].
+Ammonia from nitrides like $\text{Mg}_3\text{N}_2$ and $\text{AlN}$ using warm water[cite: 130].
+Ammonia from ammonium salts using alkalies[cite: 131].
+The reactions to be studied in terms of reactants, products, conditions and equations[cite: 131].
+Manufacture by Haber's Process[cite: 132].
+Density and solubility of ammonia (fountain experiment)[cite: 132].
+The burning of ammonia in oxygen[cite: 133].
+The catalytic oxidation of ammonia (with conditions and reaction)[cite: 133].
+Its reactions with hydrogen chloride and with hot copper (II) oxide and chlorine (both chlorine in excess and ammonia in excess)[cite: 133].
+All these reactions may be studied in terms of reactants, products, conditions, equations and observations[cite: 134].
+Aqueous solution of ammonia - reaction with sulphuric acid, nitric acid, hydrochloric acid and solutions of iron(III) chloride, iron(II) sulphate, lead nitrate, zinc nitrate and copper sulphate[cite: 135].
+Uses of ammonia manufacture of fertilizers, explosives, nitric acid, refrigerant gas (Chlorofluro carbon - and its suitable alternatives which are non-ozone depleting), and cleansing agents[cite: 136].
+
+C. Nitric Acid
+Nitric Acid: one laboratory method of preparation of nitric acid from potassium nitrate or sodium nitrate. Large scale preparation[cite: 137]. Nitric acid as an oxidizing agent[cite: 138].
+Laboratory preparation of nitric acid from potassium nitrate or sodium nitrate[cite: 138]; the laboratory method to be studied in terms of reactants, products, conditions, equations, setting up of apparatus, diagram, precautions, collection and identification[cite: 139].
+Manufacture of Nitric acid by Ostwald's process (Only equations with conditions where applicable)[cite: 140].
+As an oxidising agent: its reaction with copper, carbon, sulphur[cite: 140].
+
+D. Sulphuric Acid
+Large scale preparation, its behaviour as an acid when dilute, as an oxidizing agent when concentrated oxidation of carbon and sulphur[cite: 141]; as a dehydrating agent - dehydration of sugar and copper (II) sulphate crystals; its non-volatile nature[cite: 142].
+Manufacture by Contact Process Equations with conditions where applicable)[cite: 142].
+Its behaviour as an acid when dilute - reaction with metal, metal oxide, metal hydroxide, metal carbonate, metal bicarbonate, metal sulphite, metal sulphide[cite: 143].
+Concentrated sulphuric acid as an oxidizing agent the oxidation of carbon and sulphur[cite: 144].
+Concentrated sulphuric acid as a dehydrating agent- (a) the dehydration of sugar (b) Copper (II) sulphate crystals[cite: 145].
+Non-volatile nature of sulphuric acid reaction with sodium or potassium chloride and sodium or potassium nitrate[cite: 146].
+
+9. Organic Chemistry
+(i) Introduction to Organic compounds[cite: 147].
+Unique nature of Carbon atom tetra valency, catenation[cite: 147].
+Formation of single, double and triple bonds, straight chain, branched chain, cyclic compounds (only benzene)[cite: 148].
+(ii) Structure and Isomerism[cite: 149].
+Structure of compounds with single, double and triple bonds[cite: 149].
+Structural formulae of hydrocarbons[cite: 150].
+Structural formula must be given for: alkanes, alkenes, alkynes up to 5 carbon atoms[cite: 150].
+Isomerism - structural (chain, position)[cite: 150].
+(iii) Homologous series characteristics with examples[cite: 151].
+Alkane, alkene, alkyne series and their gradation in properties and the relationship with the molecular mass or molecular formula[cite: 151].
+(iv) Simple nomenclature[cite: 152].
+Simple nomenclature of the hydrocarbons with simple functional groups - (double bond, triple bond, alcoholic, aldehydic, carboxylic group) longest chain rule and smallest number for functional groups rule - trivial and IUPAC names (compounds with only one functional group)[cite: 152].
+(v) Hydrocarbons: alkanes, alkenes, alkynes[cite: 153].
+Alkanes general formula; methane (greenhouse gas) and ethane - methods of preparation from sodium ethanoate (sodium acetate), sodium propanoate (sodium propionate), from iodomethane (methyl iodide) and bromoethane (ethyl bromide)[cite: 153]. Complete combustion of methane and ethane, reaction of methane and ethane with chlorine through substitution[cite: 154].
+Alkenes (unsaturated hydrocarbons with a double bond); ethene as an example. Methods of preparation of ethene by dehydro halogenation reaction and dehydration reactions[cite: 155].
+Alkynes - (unsaturated hydrocarbons with a triple bond); ethyne as an example of alkyne[cite: 156]; Methods of preparation from calcium carbide and 1,2 dibromoethane ethylene dibromide)[cite: 157].
+Only main properties, particularly addition products with hydrogen and halogen namely $\text{Cl}_2\text{, Br}_2$ and $\text{I}_2$ pertaining to alkenes and alkynes[cite: 157].
+Uses of methane, ethane, ethene, ethyne[cite: 158].
+(vi) Alcohols: ethanol preparation, properties and uses[cite: 158].
+Preparation of ethanol by hydrolysis of alkyl halide[cite: 158].
+Properties - Physical: Nature, Solubility, Density, Boiling Points[cite: 159]. Chemical: Combustion, action with sodium, ester formation with acetic acid, dehydration with conc. Sulphuric acid to prepare ethene[cite: 160].
+Denatured and spurious alcohol[cite: 160].
+Important uses of Ethanol[cite: 160].
+(vii) Carboxylic acids (aliphatic - mono carboxylic acid): Acetic acid properties and uses of acetic acid[cite: 161].
+Structure of acetic acid[cite: 162].
+Properties of Acetic Acid: Physical properties - odour (vinegar), glacial acetic acid (effect of sufficient cooling to produce ice like crystals)[cite: 162]. Chemical properties action with litmus, alkalis and alcohol (idea of esterification)[cite: 163].
+Uses of acetic acid[cite: 163].
+
+INTERNAL ASSESSMENT OF PRACTICAL WORK
+Candidates will be asked to observe the effect of ragents and/or of heat on substances supplied to them[cite: 164]. The exercises will be simple and may include the recognition and identification of certain gases and ions listed below[cite: 165]. The examiners will not, however, be restricted in their choice to substances containing the listed ions[cite: 166].
+Gases: Hydrogen, Oxygen, Carbon dioxide, Chlorine, Hydrogen chloride, Sulphur dioxide, Hydrogen sulphide, Ammonia, Water vapour, Nitrogen dioxide[cite: 167].
+Ions: Calcium, Copper, Iron, Lead, Zinc and Ammonium, Carbonate, Chloride, Nitrate, Sulphide, Sulphite and Sulphate[cite: 168].
+Knowledge of a formal scheme of analysis is not required[cite: 169]. Semi-micro techniques are acceptable but candidates using such techniques may need to adapt the instructions given to suit the size of the apparatus being used[cite: 169].
+Candidates are expected to have completed the following minimum practical work[cite: 170]:
+
+1. Action of heat on the following substances:
+(a) Copper carbonate, zinc carbonate [cite: 170]
+(b) zinc nitrate, copper nitrate, lead nitrate [cite: 170]
+Make observations, identify the products and make deductions where possible (equations not required)[cite: 170].
+
+2. Make a solution of the unknown substance: add sodium hydroxide solution or ammonium hydroxide solution, make observations and give your deduction[cite: 171]. Warming the mixture may be needed[cite: 172]. Choose from substances containing $\text{Ca}^{2+}, \text{Cu}^{2+}, \text{Fe}^{2+}, \text{Fe}^{3+}, \text{Pb}^{2+}, \text{Zn}^{2+}, \text{NH}_4^{+}$[cite: 172].
+
+3. Supply a solution of a dilute acid and alkali[cite: 173]. Determine which is acidic and which is basic, giving two tests for each[cite: 174].
+
+4. Add concentrated hydrochloric acid to each of the given substances, warm, make observations, identify any product and make deductions: (a) copper oxide (b) manganese dioxide[cite: 175].
+
+EVALUATION
+The assignments/project work are to be evaluated by the subject teacher and by an External Examiner[cite: 177]. (The External Examiner may be a teacher nominated by the Head of the school, who could be from the faculty, but not teaching the subject in the section/class. For example, a teacher of Chemistry of Class VIII may be deputed to be an External Examiner for Class X Chemistry projects.)[cite: 178].
+The Internal Examiner and the External Examiner will assess the assignments independently[cite: 178].
+Award of Marks (20 Marks) [cite: 179]
+Subject Teacher (Internal Examiner) 10 marks [cite: 179]
+External Examiner 10 marks [cite: 179]
+The total marks obtained out of 20 are to be sent to CISCE by the Head of the school[cite: 179].
+The Head of the school will be responsible for the online entry of marks on CISCE’s CAREERS portal by the due date[cite: 180].
+
+NOTE: According to the recommendation of International Union of Pure and Applied Chemistry (IUPAC), the groups are numbered from 1 to 18 replacing the older notation of groups IA …. VIIA, VIII, IB …… VIIB and 0. However, for the examination both notations will be accepted[cite: 182].
+Old notation: IA IIA IIIB IVB VB VIB VIIB VIII IB IIB IIIA IVA VA VIA VIIA 0 [cite: 183]
+New notation: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 [cite: 183]
