@@ -1,47 +1,56 @@
 /**
- * In-memory storage for syllabus content.
- * In a real application, this data would likely come from an API or static assets.
- */
-const syllabusContentMap: { [key: string]: string } = {
-  "Chemistry": "Chemistry Syllabus: Atomic structure, chemical bonding, states of matter.",
-  "Physics": "Physics Syllabus: Mechanics, thermodynamics, electricity and magnetism.",
-  "Biology": "Biology Syllabus: Cell biology, genetics, ecology.",
-  "Mathematics": "Mathematics Syllabus: Algebra, calculus, statistics.",
-  "English": "English Syllabus: Literature analysis, grammar, essay writing.",
-  "Computer Science": "Computer Science Syllabus: Programming fundamentals, data structures, algorithms."
-};
-
-/**
- * Retrieves the syllabus content for a specific academic subject from in-memory storage.
+ * Retrieves the syllabus content for a specific academic subject using the fetch API.
  *
  * @param subject The academic subject (e.g., "Physics", "Computer Science").
- * @returns The syllabus content as a string, or an error message if the subject is not found.
+ * @returns A Promise that resolves with the syllabus content as a string, or rejects with an error.
  */
-export function get_syllabus(subject: string): string {
+export async function get_syllabus(subject: string): Promise<string> {
   console.log(`Attempting to retrieve syllabus for: ${subject}`);
 
-  // Normalize subject name for lookup (optional, but good practice if input might vary)
-  const normalizedSubject = subject.charAt(0).toUpperCase() + subject.slice(1).toLowerCase();
+  // Normalize subject name to match file naming convention (lowercase, spaces to underscores)
+  const fileName = `${subject.toLowerCase().replace(/\s+/g, '_')}_syllabus.txt`;
+  // Construct the URL relative to the public directory
+  const fileUrl = `/syllabi/${fileName}`;
 
-  if (syllabusContentMap[normalizedSubject]) {
-    console.log(`Successfully retrieved syllabus for ${subject}.`);
-    return syllabusContentMap[normalizedSubject];
-  } else {
-    console.warn(`Syllabus not found for subject: ${subject}`);
-    return `Error: Syllabus content not available for subject "${subject}".`;
+  try {
+    const response = await fetch(fileUrl);
+
+    if (!response.ok) {
+      // Handle HTTP errors (e.g., 404 Not Found)
+      const errorText = `Error fetching syllabus for subject "${subject}": ${response.status} ${response.statusText}`;
+      console.error(errorText);
+      return `Error: Syllabus file not found for subject "${subject}".`;
+    }
+
+    const syllabusContent = await response.text();
+    console.log(`Successfully retrieved syllabus from: ${fileUrl}`);
+    return syllabusContent;
+  } catch (error: any) {
+    // Handle network errors
+    console.error(`Network error fetching syllabus for subject "${subject}": ${error.message}`);
+    return `Error: Could not fetch syllabus for subject "${subject}".`;
   }
 }
 
 // Example usage (optional, for testing purposes)
 /*
-function testSyllabusReader() {
-  const subject = "Physics"; // Change to test different subjects
-  const syllabusContent = get_syllabus(subject);
-  console.log(`Syllabus for ${subject}:\n`, syllabusContent);
+async function testSyllabusReader() {
+  const subject = "Computer Science"; // Change to test different subjects
+  try {
+    const syllabusContent = await get_syllabus(subject);
+    console.log(`Syllabus for ${subject}:\n`, syllabusContent);
+  } catch (error) {
+    console.error(`Failed to get syllabus for ${subject}:`, error);
+  }
+
 
   const invalidSubject = "Astrophysics";
-  const invalidSyllabusContent = get_syllabus(invalidSubject);
-  console.log(`Syllabus for ${invalidSubject}:\n`, invalidSyllabusContent);
+  try {
+    const invalidSyllabusContent = await get_syllabus(invalidSubject);
+    console.log(`Syllabus for ${invalidSubject}:\n`, invalidSyllabusContent);
+  } catch (error) {
+    console.error(`Failed to get syllabus for ${invalidSubject}:`, error);
+  }
 }
 
 testSyllabusReader();

@@ -227,7 +227,7 @@ export function handleCreateFlashcardSet(args: string): MessageContent {
 /**
  * Process an OpenAI function call and return appropriate flashcard content
  */
-export function processFunctionCall(name: string, args: string): MessageContent | null {
+export async function processFunctionCall(name: string, args: string): Promise<MessageContent | null> {
   console.log(`Processing function call: ${name}`);
 
   try {
@@ -254,8 +254,8 @@ export function processFunctionCall(name: string, args: string): MessageContent 
              return { type: 'text', text: 'Error: Invalid subject provided for get_syllabus function.' };
           }
 
-          // Call the actual get_syllabus function (now synchronous)
-          const syllabusContent = get_syllabus(params.subject);
+          // Call the actual get_syllabus function and AWAIT the result
+          const syllabusContent = await get_syllabus(params.subject);
 
           // Return the syllabus content as a text message content
           return {
