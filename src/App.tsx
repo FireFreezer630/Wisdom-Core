@@ -111,6 +111,13 @@ function App() {
         messages: [...updatedMessages, newMessage]
       });
 
+// --- DIAGNOSTIC LOGGING START ---
+      console.log("handleSendMessage: Checking prompt state...");
+      console.log("handleSendMessage: activeConversation:", JSON.stringify(activeConversation, null, 2));
+      console.log("handleSendMessage: activeConversation.systemPrompt:", activeConversation?.systemPrompt);
+      console.log("handleSendMessage: settings:", JSON.stringify(settings, null, 2));
+      console.log("handleSendMessage: settings.defaultSystemPrompt:", settings?.defaultSystemPrompt);
+      // --- DIAGNOSTIC LOGGING END ---
       // Get the conversation-specific system prompt or fall back to default
       const systemPrompt = activeConversation.systemPrompt || settings.defaultSystemPrompt;
 
