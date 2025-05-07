@@ -64,8 +64,8 @@ export interface Timer {
 // Flashcard System Types
 export interface FlashcardData {
   id: string;
-  type: 'basic' | 'mcq' | 'truefalse';
-  question: string;
+  type: 'basic' | 'mcq' | 'truefalse' | 'fillintheblanks' | 'namethefollowing';
+  question: string; // For basic, mcq, truefalse. For fillintheblanks, this will be the text with a placeholder. For namethefollowing, this will be the prompt.
   imageUrl?: string;
   explanation?: string;
 }
@@ -91,7 +91,23 @@ export interface TrueFalseFlashcard extends FlashcardData {
   isTrue: boolean;
 }
 
-export type Flashcard = BasicFlashcard | MCQFlashcard | TrueFalseFlashcard;
+export interface FillInTheBlanksFlashcard extends FlashcardData {
+  type: 'fillintheblanks';
+  // question property from FlashcardData will hold the text with a placeholder, e.g., "The powerhouse of the cell is the {blank}."
+  // The 'question' property from FlashcardData will be used for the main text.
+  // We can add a specific property for the placeholder itself if needed for rendering,
+  // or assume a convention like {blank} or ____ in the question text.
+  answer: string; // The word/phrase that fills the blank
+}
+
+export interface NameTheFollowingFlashcard extends FlashcardData {
+  type: 'namethefollowing';
+  // question property from FlashcardData will hold the prompt, e.g., "Name this part of the flower."
+  // imageUrl from FlashcardData is essential here.
+  answer: string; // The name of the item to be identified
+}
+
+export type Flashcard = BasicFlashcard | MCQFlashcard | TrueFalseFlashcard | FillInTheBlanksFlashcard | NameTheFollowingFlashcard;
 
 export interface FlashcardSet {
   id: string;
@@ -231,7 +247,7 @@ export const functionDefinitions = [
             properties: {
               type: {
                 type: "string",
-                enum: ["basic", "mcq", "truefalse"],
+                enum: ["basic", "mcq", "truefalse", "fillintheblanks", "namethefollowing"],
                 description: "Type of flashcard"
               },
               question: {
@@ -261,6 +277,8 @@ export const functionDefinitions = [
                 type: "boolean",
                 description: "For truefalse type: whether the statement is true or false"
               },
+              // Properties for fillintheblanks and namethefollowing will be covered by 'answer' and 'imageUrl'
+              // The 'question' field will be used for the main text/prompt.
               explanation: {
                 type: "string",
                 description: "Optional explanation"
@@ -314,6 +332,58 @@ export const functionDefinitions = [
       additionalProperties: false // Ensure strictness
     },
     strict: true // Enforce schema adherence
+  },
+  {
+    name: "create_fill_in_the_blanks",
+    description: "Create a fill-in-the-blanks flashcard.",
+    parameters: {
+      type: "object",
+      properties: {
+        question: {
+          type: "string",
+          description: "The text with a placeholder for the blank (e.g., 'The capital of France is ____.' or 'The capital of France is {blank}.'). The AI should decide on a consistent placeholder format."
+        },
+        answer: {
+          type: "string",
+          description: "The word or phrase that correctly fills the blank."
+        },
+        explanation: {
+          type: "string",
+          description: "Optional explanation for the answer."
+        },
+        imageUrl: {
+          type: "string",
+          description: "Optional URL to an image to display with the flashcard."
+        }
+      },
+      required: ["question", "answer"]
+    }
+  },
+  {
+    name: "create_name_the_following",
+    description: "Create a 'Name the Following' flashcard, typically used with an image.",
+    parameters: {
+      type: "object",
+      properties: {
+        question: { // This will serve as the prompt
+          type: "string",
+          description: "The prompt for the user (e.g., 'Name this organ:', 'What is shown in the image?')."
+        },
+        imageUrl: {
+          type: "string",
+          description: "URL of the image to be identified. This is highly recommended for this flashcard type."
+        },
+        answer: {
+          type: "string",
+          description: "The correct name of the item or concept to be identified."
+        },
+        explanation: {
+          type: "string",
+          description: "Optional explanation of the answer."
+        }
+      },
+      required: ["question", "answer"] // imageUrl is highly recommended but not strictly required by the tool definition to allow flexibility.
+    }
   },
   // Add the image search tool
   imageSearchTool

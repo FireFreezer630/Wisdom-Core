@@ -4,7 +4,9 @@ import type {
   BasicFlashcard,
   MCQFlashcard,
   TrueFalseFlashcard,
-  FlashcardSet
+  FlashcardSet,
+  FillInTheBlanksFlashcard, // Add this type
+  NameTheFollowingFlashcard // Add this type
 } from '../types';
 import { get_syllabus } from './syllabusReader'; // Import the get_syllabus function
 
@@ -225,6 +227,84 @@ export function handleCreateFlashcardSet(args: string): MessageContent {
 }
 
 /**
+ * Handles a create_fill_in_the_blanks function call
+ */
+export function handleCreateFillInTheBlanks(args: string): MessageContent {
+  try {
+    const params = JSON.parse(args);
+
+    // Basic validation for fill in the blanks
+    if (!params.question || typeof params.question !== 'string') {
+      console.error('Fill in the blanks validation failed: missing or invalid question');
+      throw new Error('Invalid fill in the blanks data: missing or invalid question');
+    }
+    if (!params.answer || typeof params.answer !== 'string') {
+      console.error('Fill in the blanks validation failed: missing or invalid answer');
+      throw new Error('Invalid fill in the blanks data: missing or invalid answer');
+    }
+
+    const flashcard: FillInTheBlanksFlashcard = {
+      id: uuidv4(),
+      type: 'fillintheblanks',
+      question: params.question,
+      answer: params.answer,
+      explanation: params.explanation,
+      imageUrl: params.imageUrl
+    };
+
+    console.log('Created fill in the blanks flashcard:', flashcard.id);
+    return {
+      type: 'flashcard',
+      flashcard
+    };
+  } catch (error) {
+    console.error('Error handling create_fill_in_the_blanks:', error);
+    console.error('Arguments received:', args);
+    throw new Error('Failed to create fill in the blanks flashcard: ' + (error instanceof Error ? error.message : String(error)));
+  }
+}
+
+/**
+ * Handles a create_name_the_following function call
+ */
+export function handleCreateNameTheFollowing(args: string): MessageContent {
+  try {
+    const params = JSON.parse(args);
+
+    // Basic validation for name the following
+    if (!params.question || typeof params.question !== 'string') {
+      console.error('Name the following validation failed: missing or invalid question (prompt)');
+      throw new Error('Invalid name the following data: missing or invalid question (prompt)');
+    }
+     if (!params.answer || typeof params.answer !== 'string') {
+      console.error('Name the following validation failed: missing or invalid answer');
+      throw new Error('Invalid name the following data: missing or invalid answer');
+    }
+    // imageUrl is highly recommended but not strictly required by the tool definition
+
+    const flashcard: NameTheFollowingFlashcard = {
+      id: uuidv4(),
+      type: 'namethefollowing',
+      question: params.question, // This is the prompt
+      imageUrl: params.imageUrl,
+      answer: params.answer,
+      explanation: params.explanation
+    };
+
+    console.log('Created name the following flashcard:', flashcard.id);
+    return {
+      type: 'flashcard',
+      flashcard
+    };
+  } catch (error) {
+    console.error('Error handling create_name_the_following:', error);
+    console.error('Arguments received:', args);
+    throw new Error('Failed to create name the following flashcard: ' + (error instanceof Error ? error.message : String(error)));
+  }
+}
+
+
+/**
  * Process an OpenAI function call and return appropriate flashcard content
  */
 export async function processFunctionCall(name: string, args: string): Promise<MessageContent | null> {
@@ -240,6 +320,10 @@ export async function processFunctionCall(name: string, args: string): Promise<M
         return handleCreateTrueFalse(args);
       case 'create_flashcard_set':
         return handleCreateFlashcardSet(args);
+      case 'create_fill_in_the_blanks': // Add case for fill in the blanks
+        return handleCreateFillInTheBlanks(args);
+      case 'create_name_the_following': // Add case for name the following
+        return handleCreateNameTheFollowing(args);
       case 'get_syllabus':
         try {
           const params = JSON.parse(args);
