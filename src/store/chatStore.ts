@@ -1,21 +1,27 @@
 import { create } from 'zustand';
 import type { Conversation, Settings, Timer, Message, MessageContent } from '../types';
-import DEFAULT_SYSTEM_PROMPT_TEXT from './defaultSystemPrompt.txt?raw';
+import defaultSystemPromptContent from './defaultSystemPrompt.txt?raw';
 
 interface ChatStore {
   conversations: Conversation[];
   activeConversationId: string | null;
   settings: Settings;
   timer: Timer;
+  loadingStates: {
+    isSyllabusLoading: boolean;
+    isWebSearchLoading: boolean;
+    isGeneratingResponse: boolean;
+  };
   addConversation: (conversation: Conversation) => void;
   updateConversation: (id: string, updates: Partial<Conversation>) => void;
   deleteConversation: (id: string) => void;
   setActiveConversation: (id: string) => void;
   updateSettings: (settings: Partial<Settings>) => void;
   setTimer: (timer: Partial<Timer>) => void;
+  setLoadingState: (key: keyof ChatStore['loadingStates'], value: boolean) => void;
 }
 
-export const DEFAULT_SYSTEM_PROMPT = DEFAULT_SYSTEM_PROMPT_TEXT;
+export const DEFAULT_SYSTEM_PROMPT = defaultSystemPromptContent;
 
 const DEFAULT_CONVERSATION: Conversation = {
   id: crypto.randomUUID(),
@@ -159,6 +165,18 @@ export const useChatStore = create<ChatStore>((set, get) => {
       pomodoroState: 'work',
       currentRound: 1,
     },
+    loadingStates: {
+      isSyllabusLoading: false,
+      isWebSearchLoading: false,
+      isGeneratingResponse: false,
+    },
+    setLoadingState: (key, value) =>
+      set((state) => ({
+        loadingStates: {
+          ...state.loadingStates,
+          [key]: value,
+        },
+      })),
     addConversation: (conversation) =>
       set((state) => {
         const newState = {

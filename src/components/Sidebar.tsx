@@ -200,7 +200,7 @@ export const Sidebar: React.FC = () => {
                 ) : (
                   <>
                     <span className="flex-1 truncate font-medium">{conversation.title}</span>
-                    <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-opacity duration-200">
+                    <div className="group-hover:opacity-100 flex gap-1 transition-opacity duration-200">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();

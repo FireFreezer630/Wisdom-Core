@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { User, Copy, Volume2, Square } from 'lucide-react';
+import { User, Copy, Volume2, Square, Loader2 } from 'lucide-react';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
@@ -8,6 +8,7 @@ import { useTheme } from '../lib/ThemeProvider';
 import { FlashcardRenderer } from './flashcards/FlashcardRenderer';
 import type { Message, MessageContent } from '../types';
 import { motion } from 'framer-motion'; // Import motion
+import { useChatStore } from '../store/chatStore';
 
 interface ChatMessageProps {
   role: 'system' | 'user' | 'assistant' | 'function' | 'tool'; // Added 'tool' role
@@ -20,6 +21,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ role, content }) => {
   const isUser = role === 'user';
   const isFunction = role === 'function';
   const { isDarkMode } = useTheme();
+  const { loadingStates } = useChatStore();
 
   const getMessageContent = (content: string | MessageContent[] | null): string => {
     if (typeof content === 'string') {
@@ -109,6 +111,12 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ role, content }) => {
     ? 'rounded-2xl rounded-tr-md'
     : 'rounded-2xl rounded-tl-md';
 
+  // Loading indicator messages
+  const loadingMessages = {
+    isSyllabusLoading: 'Gathering syllabus...',
+    isGeneratingResponse: 'Generating response...',
+  };
+
   return (
     <motion.div // Use motion.div for animation
       className={`flex gap-3 sm:gap-4 ${isUser ? 'flex-row-reverse' : ''} mb-6 items-end`}
@@ -165,6 +173,24 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ role, content }) => {
               // Handle other potential content types or null items if necessary
               return null;
             })
+          )}
+
+          {/* Loading indicators for assistant messages */}
+          {!isUser && !content && (loadingStates.isSyllabusLoading || loadingStates.isGeneratingResponse) && (
+            <div className="mt-2 space-y-1">
+              {loadingStates.isSyllabusLoading && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>{loadingMessages.isSyllabusLoading}</span>
+                </div>
+              )}
+              {loadingStates.isGeneratingResponse && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>{loadingMessages.isGeneratingResponse}</span>
+                </div>
+              )}
+            </div>
           )}
         </div>
         {!isUser && (

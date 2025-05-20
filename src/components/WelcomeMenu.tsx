@@ -26,7 +26,7 @@ const WelcomeMenu: React.FC<WelcomeMenuProps> = ({ onContinue }) => {
 
   return (
     <motion.div
-      className={`min-h-screen flex items-center justify-center p-4 ${bgColor}`}
+      className={`flex-1 min-h-screen flex items-center justify-center p-4 ${bgColor}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, RotateCcw } from 'lucide-react';
-import { useChatStore, DEFAULT_SYSTEM_PROMPT } from '../store/chatStore'; // Import DEFAULT_SYSTEM_PROMPT
+import { useChatStore, DEFAULT_SYSTEM_PROMPT } from '../store/chatStore';
 import { useTheme } from '../lib/ThemeProvider';
 import { motion, AnimatePresence } from 'framer-motion'; // Import motion and AnimatePresence
 
@@ -9,7 +9,8 @@ interface SettingsModalProps {
   onClose: () => void;
 }
 
-// Removed duplicated DEFAULT_SYSTEM_PROMPT definition
+// Default system prompt from chat store
+
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const { settings, updateSettings } = useChatStore();
@@ -39,24 +40,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
 
   const handleResetPrompt = () => {
     setTempPrompt(DEFAULT_SYSTEM_PROMPT);
+    updateSettings({ defaultSystemPrompt: DEFAULT_SYSTEM_PROMPT });
   };
 
   const handleSave = () => {
-    // Trim whitespace and check if the prompt is empty
-    const trimmedPrompt = tempPrompt.trim();
-
-    if (!trimmedPrompt) {
-      // Reset to the actual default if empty
-      console.warn("Attempted to save empty system prompt. Resetting to default.");
-      updateSettings({
-        defaultSystemPrompt: DEFAULT_SYSTEM_PROMPT, // Use the imported default
-      });
-    } else {
-      // Save the non-empty prompt
-      updateSettings({
-        defaultSystemPrompt: trimmedPrompt, // Save the trimmed version
-      });
-    }
+    updateSettings({
+      defaultSystemPrompt: tempPrompt,
+    });
 
     onClose();
   };

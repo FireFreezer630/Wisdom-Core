@@ -140,6 +140,7 @@ export const streamCompletion = async (
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Referer": "https://image.aixboost.com",
       },
       body: JSON.stringify(payload),
       signal: signal // Pass the abort signal
@@ -241,6 +242,7 @@ export const streamCompletion = async (
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Referer": "https://image.aixboost.com",
         },
         body: JSON.stringify(secondPayload),
         signal: signal // Pass the abort signal
